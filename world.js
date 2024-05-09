@@ -57,6 +57,9 @@ class BasicWorldDemo {
 		try {
 			let idToOpen = localStorage.getItem('worldIdToOpen');
 			this._worldFile = JSON.parse(localStorage.getItem('WorldFile-' + idToOpen));
+			if (!idToOpen || !this._worldFile) {
+				location.href = 'index.html';
+			}
 		} catch (e) {
 			console.log(e);
 			location.href = 'index.html';
@@ -271,14 +274,16 @@ class BasicWorldDemo {
 			if (this._worldFile.floor.arr[i] == 0) {
 				this._worldFile.floor.arr[i] = new Array(size);
 				for (let l = 0; l < size; l++) {
-					this._worldFile.floor.arr[i][l] = [this._worldFile.floor.defaultTexture, 0];
+					this._worldFile.floor.arr[i][l] = [this._worldFile.floor.defaultTexture, 0, 0];
 				}
 			}
 			let littleSquare = new THREE.Mesh(
 				new THREE.PlaneGeometry(this._squareSize, this._squareSize, 1, 1),
 				this._paints[this._worldFile.floor.arr[i][j][0]]
 			);
-			littleSquare.position.set(x, this._worldFile.floor.arr[i][j][1] * this._squareSize, z);
+			const height = this._worldFile.floor.arr[i][j][1];
+			const wallColor = this._worldFile.floor.arr[i][j][2];
+			littleSquare.position.set(x, height * this._squareSize, z);
 			littleSquare.rotation.x = -Math.PI / 2;
 			littleSquare.castShadow = false;
 			littleSquare.receiveShadow = true;
@@ -286,6 +291,42 @@ class BasicWorldDemo {
 			littleSquare.userData.tilePos = { "i": i, "j": j };
 			this._scene.add(littleSquare);
 			this._groundTiles1D.push(littleSquare);
+
+			// make walls if has height:
+			if (height > 0) {
+				// for each of the 4 adjacent tiles
+				let sides = [ [1,0, Math.PI / 2], [-1,0, -Math.PI / 2], [0,1, 0], [0,-1, Math.PI] ]
+				for (let k = 0; k < sides.length; k++) {
+					const side = sides[k];
+
+					// if that tiles doesn't exist: continue
+					let opponent;
+					try {
+						opponent = this._worldFile.floor.arr[i + side[0]][j + side[1]];
+					} catch (e) { continue; }
+					if (opponent == undefined) { continue; }
+					
+					// if their height is more than or equal to mine: continue
+					if (opponent[1] >= height) { continue; }
+					console.log(opponent, k);
+					
+					// make a plane whose length is myHeight - theirHeight
+					let panel = new THREE.Mesh(
+						new THREE.PlaneGeometry((height - opponent[1]) * this._squareSize, this._squareSize, 1, 1),
+						this._paints[this._worldFile.floor.arr[i][j][0]]
+					);
+
+					// rotate and put in place, aligned so the top reaches my height
+					panel.position.copy(littleSquare.position);
+					panel.position.y -= (height - opponent[1])*this._squareSize / 2;
+					panel.rotation.z = -Math.PI / 2;
+					panel.rotation.y = side[2];
+					panel.castShadow = true;
+					panel.receiveShadow = true;
+					panel.userData.wall = true;
+					this._scene.add(panel);
+				}
+			}
 		};
 
 		for (let i = 0; i < size; i += 1) {
