@@ -36,7 +36,7 @@ function createNewWorld(name, size, defaultTexture = '000') {
 		"lastEdited": new Date(),
 		"floor": {
 			"size": size,
-			"paintArr": null,
+			"arr": null,
 			"defaultTexture": defaultTexture
 		},
 		"blocks": [],
@@ -67,7 +67,7 @@ let addWorldButton = (scaler, i, worldJson, worldsListParent) => {
 		</div>
 	`;
 
-	if (!worldJson.floor.paintArr) {
+	if (!worldJson.floor.arr) {
 		return;
 	}
 	const canvas = document.getElementById('makeImgCanvas');
@@ -77,7 +77,7 @@ let addWorldButton = (scaler, i, worldJson, worldsListParent) => {
 
 	for (let x = 0; x < worldJson.floor.size; x++) {
 		for (let y = 0; y < worldJson.floor.size; y++) {
-			const colorCode = worldJson.floor.paintArr[worldJson.floor.size - y - 1][worldJson.floor.size - x - 1];
+			const colorCode = worldJson.floor.arr[worldJson.floor.size - y - 1][worldJson.floor.size - x - 1][0];
 			if (txtToColor[colorCode]) {
 				ctx.fillStyle = txtToColor[colorCode];
 				ctx.fillRect(y * scaler, x * scaler, scaler, scaler);

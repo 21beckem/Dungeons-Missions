@@ -36,6 +36,7 @@ class BasicWorldDemo {
 		);
 		this._controls.target.set(0, 20, 0);
 		this._controls.update();
+		this._squareSize = 5;
 
 		this.SUB_loadWorldFile();
 
@@ -77,7 +78,7 @@ class BasicWorldDemo {
 	}
 
 	SUB_createLight() {
-		let light = new THREE.DirectionalLight(0xFFFFFF, 1.0);
+		let light = new THREE.DirectionalLight(0xFFFFFF, 0.5);
 		light.position.set(20, 100, 10);
 		light.target.position.set(0, 0, 0);
 		light.castShadow = true;
@@ -94,7 +95,7 @@ class BasicWorldDemo {
 		light.shadow.camera.bottom = -100;
 		this._scene.add(light);
 
-		light = new THREE.AmbientLight(0x101010);
+		light = new THREE.AmbientLight(0x101010, 8.0);
 		this._scene.add(light);
 	}
 
@@ -183,9 +184,9 @@ class BasicWorldDemo {
 			let found = this._raycaster.intersectObjects(this._groundTiles1D);
 
 			if (found.length > 0) {
-				if (found[0].object.userData.canBuildOn) {
+				if (found[0].object.userData.ground) {
 					this._drawing = true;
-					this.SUB_paintCubeAtThisIntersect(found[0]);
+					this.SUB_paintTileAtThisIntersect(found[0]);
 				}
 			}
 		});
@@ -195,25 +196,11 @@ class BasicWorldDemo {
 			this._drawing = false;
 		});
 	}
-	SUB_paintCubeAtThisIntersect(intersect) {
+	SUB_paintTileAtThisIntersect(intersect) {
 		//console.log(intersect);
-		this._worldFile.floor.paintArr[intersect.object.userData.tilePos.i][intersect.object.userData.tilePos.j] = this._selectedPaint;
+		this._worldFile.floor.arr[intersect.object.userData.tilePos.i][intersect.object.userData.tilePos.j][0] = this._selectedPaint;
 		this.SUB_saveWorldFile();
 		intersect.object.material = this._paints[this._selectedPaint];
-	}
-	SUB_buildCubeAtThisIntersect(intersect) {
-		const buildSize = 5;
-		const voxel = new THREE.Mesh(
-			new THREE.BoxGeometry(buildSize, buildSize, buildSize),
-			this._buildingMaterials[this._buildingMaterial]
-		);
-		voxel.position.copy(intersect.point).add(intersect.face.normal);
-		//console.log(voxel.position);
-		voxel.castShadow = false;
-		voxel.receiveShadow = true;
-		//voxel.userData.canBuildOn = true;
-		voxel.position.divideScalar(buildSize).floor().multiplyScalar(buildSize).addScalar(buildSize / 2);
-		this._scene.add(voxel);
 	}
 	SUB_getPaints() {
 		const textures = [
@@ -236,7 +223,7 @@ class BasicWorldDemo {
 				map: map,
 				color: text[1]
 			});
-			this._paints[key] = buildingVoxelMat
+			this._paints[key] = buildingVoxelMat;
 		});
 		this._paints['blk'] = new THREE.MeshLambertMaterial({
 			color: 0x000000
@@ -252,7 +239,7 @@ class BasicWorldDemo {
 		let found = this._raycaster.intersectObjects(this._groundTiles1D);
 		if (found.length > 0) {
 			if (found[0].object.userData.ground) {
-				this.SUB_paintCubeAtThisIntersect(found[0]);
+				this.SUB_paintTileAtThisIntersect(found[0]);
 			}
 		}
 	}
@@ -268,32 +255,34 @@ class BasicWorldDemo {
 			'./resources/negz.jpg',
 		]);
 		this._scene.background = texture;*/
+		this._scene.background = new THREE.Color( 0xf0f0f0 );
 	}
 
 	SUB_createFloor() {
 		const size = this._worldFile.floor.size;
-		const squareSize = 5;
 		const gridSquareSize = 10;
-		const realWorldSize = size * squareSize;
+		const realWorldSize = size * this._squareSize;
 		this._groundTiles1D = Array();
-		if (this._worldFile.floor.paintArr == null) {
-			this._worldFile.floor.paintArr = new Array(size).fill(0);
+		if (this._worldFile.floor.arr == null) {
+			this._worldFile.floor.arr = new Array(size).fill(0);
 		}
 
-		let makeLittleGroundPlane = (x, y, z, i, j) => {
-			if (this._worldFile.floor.paintArr[i] == 0) {
-				this._worldFile.floor.paintArr[i] = new Array(size).fill(this._worldFile.floor.defaultTexture);
+		let makeLittleGroundPlane = (x, z, i, j) => {
+			if (this._worldFile.floor.arr[i] == 0) {
+				this._worldFile.floor.arr[i] = new Array(size);
+				for (let l = 0; l < size; l++) {
+					this._worldFile.floor.arr[i][l] = [this._worldFile.floor.defaultTexture, 0];
+				}
 			}
 			let littleSquare = new THREE.Mesh(
-				new THREE.PlaneGeometry(squareSize, squareSize, 1, 1),
-				this._paints[this._worldFile.floor.paintArr[i][j]]
+				new THREE.PlaneGeometry(this._squareSize, this._squareSize, 1, 1),
+				this._paints[this._worldFile.floor.arr[i][j][0]]
 			);
-			littleSquare.position.set(x, y, z);
+			littleSquare.position.set(x, this._worldFile.floor.arr[i][j][1] * this._squareSize, z);
 			littleSquare.rotation.x = -Math.PI / 2;
 			littleSquare.castShadow = false;
 			littleSquare.receiveShadow = true;
 			littleSquare.userData.ground = true;
-			littleSquare.userData.canBuildOn = true;
 			littleSquare.userData.tilePos = { "i": i, "j": j };
 			this._scene.add(littleSquare);
 			this._groundTiles1D.push(littleSquare);
@@ -301,7 +290,7 @@ class BasicWorldDemo {
 
 		for (let i = 0; i < size; i += 1) {
 			for (let j = 0; j < size; j += 1) {
-				makeLittleGroundPlane((i * squareSize) - (realWorldSize / 2) + (squareSize / 2), 0, (j * squareSize) - (realWorldSize / 2) + (squareSize / 2), i, j);
+				makeLittleGroundPlane((i * this._squareSize) - (realWorldSize / 2) + (this._squareSize / 2), (j * this._squareSize) - (realWorldSize / 2) + (this._squareSize / 2), i, j);
 			}
 		}
 		this.SUB_saveWorldFile();
