@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Dungeons & Missions</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<script src="https://kit.fontawesome.com/0bddc0a0f7.js" crossorigin="anonymous"></script>
+	<link rel="stylesheet" type="text/css" href="base.css">
+</head>
+
+<body>
+	<div id="topRightTools">
+		<button mode="build" style="display: none;"><i class="fa-solid fa-hammer"></i></button>
+		<button mode="paint"><i class="fa-solid fa-paintbrush"></i></button>
+		<button mode="drag"><i class="fa-solid fa-hand-pointer"></i></button>
+		<button mode="pan" class="active"><i class="fa-solid fa-hand"></i></button>
+	</div>
+	<div class="bottomToolBox" id="paintingTools" style="display:none">
+		<select onchange="_APP._selectedPaint = this.value" id="paintingTexture">
+			<option selected value="cr8">Crate</option>
+			<option value="wud">Wood</option>
+			<option value="stn">Stone</option>
+			<option value="grs">Grass</option>
+			<option value="drt">Dirt</option>
+			<option value="snd">Sand</option>
+			<option value="cbl">Cobblestone</option>
+			<option value="blk">Black</option>
+			<option value="wtr">Water</option>
+		</select>
+		<button mode="paint" class="active"><i class="fa-solid fa-paintbrush"></i></button>
+		<button mode="eraser"><i class="fa-solid fa-eraser"></i></button>
+		<button mode="square"><i class="fa-solid fa-vector-square"></i></button>
+	</div>
+	<div class="bottomToolBox" id="buildingTools" style="display:none">
+		<select id="buildingTexture">
+			<option value="crate">Crate</option>
+			<option value="wood">Wood</option>
+			<option value="stone">Stone</option>
+			<option value="brick">Brick</option>
+			<option value="dirt">Dirt</option>
+		</select>
+		<button mode="build" class="active"><i class="fa-solid fa-hammer"></i></button>
+		<button mode="eraser"><i class="fa-solid fa-eraser"></i></button>
+		<button mode="square"><i class="fa-solid fa-vector-square"></i></button>
+	</div>
+	<script src="world.js" type="module"></script>
+	<script>
+		HTMLCollection.prototype.forEach = function (x) {return Array.from(this).forEach(x);}
+		function _(x) {return document.getElementById(x);}
+		var _APP = globalThis._APP;
+
+		_('topRightTools').children.forEach(btn => {
+			btn.addEventListener('click', () => {
+				_('topRightTools').children.forEach(x => x.classList.remove('active'));
+				btn.classList.add('active');
+
+				const mode = btn.getAttribute('mode');
+				if (mode == 'build') {
+					_('buildingTools').style.display = '';
+					_('paintingTools').style.display = 'none';
+				} else if (mode == 'paint') {
+					_('buildingTools').style.display = 'none';
+					_('paintingTools').style.display = '';
+				} else if (mode == "drag") {
+					_('buildingTools').style.display = 'none';
+					_('paintingTools').style.display = 'none';
+				} else {
+					_('buildingTools').style.display = 'none';
+					_('paintingTools').style.display = 'none';
+				}
+				_APP.setMouseMode(mode);
+			})
+		});
+
+		_('paintingTools').querySelectorAll('BUTTON[mode]').forEach(btn => {
+			btn.addEventListener('click', () => {
+				_('paintingTools').children.forEach(x => x.classList.remove('active'));
+				btn.classList.add('active');
+				//_APP.setBuildingMode(mode);
+			})
+		});
+
+		_('buildingTools').querySelectorAll('BUTTON[mode]').forEach(btn => {
+			btn.addEventListener('click', () => {
+				_('buildingTools').children.forEach(x => x.classList.remove('active'));
+				btn.classList.add('active');
+				//_APP.setBuildingMode(mode);
+			})
+		});
+
+		function doubleCheckClear() {
+			// if (confirm('Are you sure you want to clear the entire painted map?')) {
+			// alert('clearing');
+			// }
+		}
+
+
+	</script>
+</body>
+
+</html>
