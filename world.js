@@ -201,9 +201,10 @@ class BasicWorldDemo {
 	}
 	SUB_paintTileAtThisIntersect(intersect) {
 		//console.log(intersect);
-		this._worldFile.floor.arr[intersect.object.userData.tilePos.i][intersect.object.userData.tilePos.j][0] = this._selectedPaint;
-		this.SUB_saveWorldFile();
-		intersect.object.material = this._paints[this._selectedPaint];
+		console.log(intersect.point);
+		// this._worldFile.floor.arr[intersect.object.userData.tilePos.i][intersect.object.userData.tilePos.j][0] = this._selectedPaint;
+		// this.SUB_saveWorldFile();
+		// intersect.object.material = this._paints[this._selectedPaint];
 	}
 	SUB_getPaints() {
 		const textures = [
@@ -295,36 +296,69 @@ class BasicWorldDemo {
 			// make walls if has height:
 			if (height > 0) {
 				// for each of the 4 adjacent tiles
-				let sides = [ [1,0, Math.PI / 2], [-1,0, -Math.PI / 2], [0,1, 0], [0,-1, Math.PI] ]
+				let rawVerts = new Array();
+				
+				// find 4 corners for this tile
+				let numHelperI = (i * this._squareSize) - (realWorldSize / 2);
+				let numHelperJ = (j * this._squareSize) - (realWorldSize / 2);
+				const corners = [
+					[ // topLeft
+						numHelperI + this._squareSize,
+						numHelperJ + this._squareSize
+					],
+					[ // topRight
+						numHelperI,
+						numHelperJ + this._squareSize
+					],
+					[ // bottomLeft
+						numHelperI + this._squareSize,
+						numHelperJ
+					],
+					[ // bottomRight
+						numHelperI,
+						numHelperJ
+					]
+				]
+
+				let sides = [ [1,0, 0,2], [-1,0, 3,1], [0,1, 1,0], [0,-1, 2,3] ];
 				for (let k = 0; k < sides.length; k++) {
 					const side = sides[k];
 
 					// if that tiles doesn't exist: continue
 					let opponent;
 					try {
-						opponent = this._worldFile.floor.arr[i + side[0]][j + side[1]];
-					} catch (e) { continue; }
-					if (opponent == undefined) { continue; }
+						opponent = this._worldFile.floor.arr[i + side[0]][j + side[1]][1];
+					} catch (e) { opponent = 0; }
+					if (opponent == undefined) { opponent = 0; }
 					
 					// if their height is more than or equal to mine: continue
-					if (opponent[1] >= height) { continue; }
-					console.log(opponent, k);
+					if (opponent >= height) { continue; }
+					//console.log(opponent, k);
+					let minRealH = height * this._squareSize;
+					let oppRealH = opponent * this._squareSize;
 					
-					// make a plane whose length is myHeight - theirHeight
-					let panel = new THREE.Mesh(
-						new THREE.PlaneGeometry((height - opponent[1]) * this._squareSize, this._squareSize, 1, 1),
+					// add to points to rawVerts for this wall
+					rawVerts.push( corners[side[2]][0], oppRealH, corners[side[2]][1] );
+					rawVerts.push( corners[side[3]][0], minRealH, corners[side[3]][1] );
+					rawVerts.push( corners[side[2]][0], minRealH, corners[side[2]][1] );
+
+					rawVerts.push( corners[side[2]][0], oppRealH, corners[side[2]][1] );
+					rawVerts.push( corners[side[3]][0], oppRealH, corners[side[3]][1] );
+					rawVerts.push( corners[side[3]][0], minRealH, corners[side[3]][1] );
+				}
+				if (rawVerts.length > 0) {
+					const geometry = new THREE.BufferGeometry();
+					geometry.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array(rawVerts), 3 ) );
+					geometry.computeFaceNormals();
+    				geometry.computeVertexNormals();
+					let walls = new THREE.Mesh(
+						geometry,
 						this._paints[this._worldFile.floor.arr[i][j][0]]
 					);
-
-					// rotate and put in place, aligned so the top reaches my height
-					panel.position.copy(littleSquare.position);
-					panel.position.y -= (height - opponent[1])*this._squareSize / 2;
-					panel.rotation.z = -Math.PI / 2;
-					panel.rotation.y = side[2];
-					panel.castShadow = true;
-					panel.receiveShadow = true;
-					panel.userData.wall = true;
-					this._scene.add(panel);
+					walls.castShadow = true;
+					walls.receiveShadow = true;
+					walls.userData.wall = true;
+					this._scene.add(walls);
 				}
 			}
 		};
