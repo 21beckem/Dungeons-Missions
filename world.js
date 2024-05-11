@@ -121,6 +121,7 @@ class BasicWorldDemo {
 			this._moveMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 			this._draggingMouseMovedYet = true;
 			this.SUB_paintOnMouseMove();
+			this.SUB_terrainSquareOnMouseMove();
 		});
 	}
 	SUB_setupMoveToken() {
@@ -284,11 +285,7 @@ class BasicWorldDemo {
 	}
 	SUB_setupTerrainSquare() {
 		this._terrainSquare = new THREE.Line(
-			new THREE.BufferGeometry().setFromPoints([
-				new THREE.Vector3( - 10, 0, 0 ),
-				new THREE.Vector3( 0, 10, 0 ),
-				new THREE.Vector3( 10, 0, 0 )
-			]),
+			new THREE.BufferGeometry().setFromPoints([]),
 			new THREE.LineBasicMaterial( { color: 0x0000ff, visible: true } )
 		);
 		this._terrainSquare.renderOrder = 999;
@@ -306,7 +303,6 @@ class BasicWorldDemo {
 			[(pos2.i * this._squareSize) - this._worldSpaceOffset, (pos2.j * this._squareSize) - this._worldSpaceOffset],
 			w
 		);
-		console.log(corners);
 		points.push( new THREE.Vector3( corners[0][0], h, corners[0][1] ) );
 		points.push( new THREE.Vector3( corners[1][0], h, corners[1][1] ) );
 		points.push( new THREE.Vector3( corners[2][0], h, corners[2][1] ) );
@@ -316,9 +312,10 @@ class BasicWorldDemo {
 		this._terrainSquare.geometry = new THREE.BufferGeometry().setFromPoints( points );
 	}
 	SUB_setupTerraining() {
-		this.firstTilePos = null;
+		this._firstTerrainSquarePos = null;
+		this._lastTerrainSquarePos = null;
+		this._terrainSquareIncludedTiles = new Array();
 		this.SUB_setupTerrainSquare();
-		this.SUB_drawTerrainSquare({i:3, j:5}, {i:3, j:5});
 
 		this._threejs.domElement.addEventListener('pointerdown', event => {
 			//console.log('down');
@@ -335,9 +332,9 @@ class BasicWorldDemo {
 			if (found.length > 0) {
 				if (found[0].object.userData.ground) {
 					this._drawing = true;
-					this.firstTilePos = found[0].position;
-					//
-					console.log(found[0].position);
+					this._firstTerrainSquarePos = found[0].object.userData.tilePos;
+					this._lastTerrainSquarePos = found[0].object.userData.tilePos;
+					this.SUB_drawTerrainSquare(this._firstTerrainSquarePos, this._lastTerrainSquarePos);
 				}
 			}
 		});
@@ -345,7 +342,51 @@ class BasicWorldDemo {
 			//console.log('up');
 			if (this._mouseMode != 'terrain') { return; }
 			this._drawing = false;
+
+			// calculate tiles inside range
+			console.log(this._firstTerrainSquarePos, this._lastTerrainSquarePos);
+
+			const minI = Math.min(this._firstTerrainSquarePos.i, this._lastTerrainSquarePos.i);
+			const maxI = Math.max(this._firstTerrainSquarePos.i, this._lastTerrainSquarePos.i);
+			const minJ = Math.min(this._firstTerrainSquarePos.j, this._lastTerrainSquarePos.j);
+			const maxJ = Math.max(this._firstTerrainSquarePos.j, this._lastTerrainSquarePos.j);
+			this._terrainSquareIncludedTiles = new Array();
+			for (let i = minI; i <= maxI; i++) {
+				for (let j = minJ; j <= maxJ; j++) {
+					this._terrainSquareIncludedTiles.push( [i,j] );
+				}
+			}
+			console.log(this._terrainSquareIncludedTiles);
 		});
+	}
+	SUB_terrainSquareOnMouseMove() {
+		if (this._mouseMode != 'terrain') { return; }
+		if (!this._drawing) { return; }
+		this._raycaster.setFromCamera(this._moveMouse, this._camera);
+		let found = this._raycaster.intersectObjects(this._groundTiles1D);
+		if (found.length > 0) {
+			if (found[0].object.userData.ground && found[0].object.userData.tilePos != this._lastTerrainSquarePos) {
+				this._lastTerrainSquarePos = found[0].object.userData.tilePos;
+				this.SUB_drawTerrainSquare(this._firstTerrainSquarePos, this._lastTerrainSquarePos);
+			}
+		}
+	}
+	TERRAIN_add() {
+		if (this._mouseMode != 'terrain' || this._terrainSquareIncludedTiles.length < 1) { return; }
+		for (let i = 0; i < this._terrainSquareIncludedTiles.length; i++) {
+			const tilePos = this._terrainSquareIncludedTiles[i];
+			console.log('increasingHeight');
+			this._worldFile.floor.arr[tilePos[0]][tilePos[1]][1] += 1;
+		}
+		this.SUB_saveWorldFile();
+		for (let i = 0; i < this._groundTiles1D.length; i++) {
+			const tile = this._groundTiles1D[i];
+			if (tile.userData.wallMesh) {
+				tile.userData.wallMesh.remove();
+			}
+			tile.remove();
+		}
+		this.SUB_createFloor();
 	}
 
 	SUB_createSkybox() {
@@ -389,7 +430,7 @@ class BasicWorldDemo {
 			littleSquare.castShadow = false;
 			littleSquare.receiveShadow = true;
 			littleSquare.userData.ground = true;
-			littleSquare.userData.tilePos = { "i": i, "j": j };
+			littleSquare.userData.tilePos = { i: i, j: j };
 			this._scene.add(littleSquare);
 			this._groundTiles1D.push(littleSquare);
 
@@ -459,6 +500,7 @@ class BasicWorldDemo {
 					walls.receiveShadow = true;
 					walls.userData.wall = true;
 					this._scene.add(walls);
+					littleSquare.userData.wallMesh = walls;
 				}
 			}
 		};
@@ -525,10 +567,15 @@ class BasicWorldDemo {
 	}
 	setMouseMode(mode) {
 		this._mouseMode = mode;
-		if (mode == 'terrain' || mode == 'paint') {
+		if (mode == 'terrain') {
 			this._controls.enabled = false;
+			this._terrainSquare.material.visible = true;
+		} else if (mode == 'paint') {
+			this._controls.enabled = false;
+			this._terrainSquare.material.visible = false;
 		} else {
 			this._controls.enabled = true;
+			this._terrainSquare.material.visible = false;
 		}
 	}
 }
