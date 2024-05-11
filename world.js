@@ -43,6 +43,7 @@ class BasicWorldDemo {
 		this.SUB_createRaycaster();
 		this.SUB_setupMoveToken();
 		this.SUB_setupPainting();
+		this.SUB_setupTerraining();
 
 		this.SUB_createSkybox();
 
@@ -169,7 +170,6 @@ class BasicWorldDemo {
 	}
 
 	SUB_setupPainting() {
-		this._buildingMode = 'paint';
 		this._selectedPaint = 'cr8';
 		this._drawing = false;
 		this.SUB_getPaints();
@@ -201,10 +201,10 @@ class BasicWorldDemo {
 	}
 	SUB_paintTileAtThisIntersect(intersect) {
 		//console.log(intersect);
-		console.log(intersect.point);
-		// this._worldFile.floor.arr[intersect.object.userData.tilePos.i][intersect.object.userData.tilePos.j][0] = this._selectedPaint;
-		// this.SUB_saveWorldFile();
-		// intersect.object.material = this._paints[this._selectedPaint];
+		//console.log(intersect.point);
+		this._worldFile.floor.arr[intersect.object.userData.tilePos.i][intersect.object.userData.tilePos.j][0] = this._selectedPaint;
+		this.SUB_saveWorldFile();
+		intersect.object.material = this._paints[this._selectedPaint];
 	}
 	SUB_getPaints() {
 		const textures = [
@@ -246,6 +246,106 @@ class BasicWorldDemo {
 				this.SUB_paintTileAtThisIntersect(found[0]);
 			}
 		}
+	}
+	SUB_calculateRectangleOrLine(coord1, coord2, offset) {
+		// Determine the minimum and maximum x and y coordinates
+		const minX = Math.min(coord1[0], coord2[0]);
+		const maxX = Math.max(coord1[0], coord2[0]);
+		const minY = Math.min(coord1[1], coord2[1]);
+		const maxY = Math.max(coord1[1], coord2[1]);
+	
+		// Check if the provided coordinates form a line (either vertical or horizontal)
+		const isVerticalLine = minX === maxX;
+		const isHorizontalLine = minY === maxY;
+	
+		if ((isVerticalLine || isHorizontalLine) && !(isVerticalLine && isHorizontalLine)) {
+			// Extend the line into a rectangle by adding offset to the line coordinates
+			const lineStart = isVerticalLine ? minY : minX;
+			const lineEnd = isVerticalLine ? maxY : maxX;
+			const extendedStart = lineStart - offset;
+			const extendedEnd = lineEnd + offset;
+	
+			// Determine the corners of the rectangle based on the extended line
+			const topLeft = isVerticalLine ? [minX - offset, extendedStart] : [extendedStart, minY - offset];
+			const topRight = isVerticalLine ? [maxX + offset, extendedStart] : [extendedEnd, minY - offset];
+			const bottomRight = isVerticalLine ? [maxX + offset, extendedEnd] : [extendedEnd, maxY + offset];
+			const bottomLeft = isVerticalLine ? [minX - offset, extendedEnd] : [extendedStart, maxY + offset];
+	
+			return [topLeft, topRight, bottomRight, bottomLeft];
+		}
+	
+		// Calculate corners of the rectangle with the specified offset
+		const topLeft = [minX - offset, minY - offset];
+		const topRight = [maxX + offset, minY - offset];
+		const bottomLeft = [minX - offset, maxY + offset];
+		const bottomRight = [maxX + offset, maxY + offset];
+	
+		return [topLeft, topRight, bottomRight, bottomLeft];
+	}
+	SUB_setupTerrainSquare() {
+		this._terrainSquare = new THREE.Line(
+			new THREE.BufferGeometry().setFromPoints([
+				new THREE.Vector3( - 10, 0, 0 ),
+				new THREE.Vector3( 0, 10, 0 ),
+				new THREE.Vector3( 10, 0, 0 )
+			]),
+			new THREE.LineBasicMaterial( { color: 0x0000ff, visible: true } )
+		);
+		this._terrainSquare.renderOrder = 999;
+		this._terrainSquare.material.depthTest = false;
+		this._terrainSquare.material.depthWrite = false;
+		this._scene.add(this._terrainSquare);
+		this._worldSpaceOffset = ((this._worldFile.floor.size*this._squareSize) / 2) - (this._squareSize / 2);
+	}
+	SUB_drawTerrainSquare(pos1, pos2) {
+		const w = this._squareSize / 2;
+		const h = 0.2;
+		let points = new Array();
+		const corners = this.SUB_calculateRectangleOrLine(
+			[(pos1.i * this._squareSize) - this._worldSpaceOffset, (pos1.j * this._squareSize) - this._worldSpaceOffset],
+			[(pos2.i * this._squareSize) - this._worldSpaceOffset, (pos2.j * this._squareSize) - this._worldSpaceOffset],
+			w
+		);
+		console.log(corners);
+		points.push( new THREE.Vector3( corners[0][0], h, corners[0][1] ) );
+		points.push( new THREE.Vector3( corners[1][0], h, corners[1][1] ) );
+		points.push( new THREE.Vector3( corners[2][0], h, corners[2][1] ) );
+		points.push( new THREE.Vector3( corners[3][0], h, corners[3][1] ) );
+		points.push( new THREE.Vector3( corners[0][0], h, corners[0][1] ) );
+
+		this._terrainSquare.geometry = new THREE.BufferGeometry().setFromPoints( points );
+	}
+	SUB_setupTerraining() {
+		this.firstTilePos = null;
+		this.SUB_setupTerrainSquare();
+		this.SUB_drawTerrainSquare({i:3, j:5}, {i:3, j:5});
+
+		this._threejs.domElement.addEventListener('pointerdown', event => {
+			//console.log('down');
+			if (this._mouseMode != 'terrain') { return; }
+			this._draggingMouseMovedYet = false;
+
+			this._clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			this._clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+
+			this._raycaster.setFromCamera(this._clickMouse, this._camera);
+			let found = this._raycaster.intersectObjects(this._groundTiles1D);
+
+			if (found.length > 0) {
+				if (found[0].object.userData.ground) {
+					this._drawing = true;
+					this.firstTilePos = found[0].position;
+					//
+					console.log(found[0].position);
+				}
+			}
+		});
+		this._threejs.domElement.addEventListener('pointerup', event => {
+			//console.log('up');
+			if (this._mouseMode != 'terrain') { return; }
+			this._drawing = false;
+		});
 	}
 
 	SUB_createSkybox() {
@@ -425,7 +525,7 @@ class BasicWorldDemo {
 	}
 	setMouseMode(mode) {
 		this._mouseMode = mode;
-		if (mode == 'build' || mode == 'paint') {
+		if (mode == 'terrain' || mode == 'paint') {
 			this._controls.enabled = false;
 		} else {
 			this._controls.enabled = true;
