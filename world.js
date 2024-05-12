@@ -314,6 +314,7 @@ class BasicWorldDemo {
 	SUB_setupTerraining() {
 		this._firstTerrainSquarePos = null;
 		this._lastTerrainSquarePos = null;
+		this._terrain
 		this._terrainSquareIncludedTiles = new Array();
 		this.SUB_setupTerrainSquare();
 
@@ -344,7 +345,7 @@ class BasicWorldDemo {
 			this._drawing = false;
 
 			// calculate tiles inside range
-			console.log(this._firstTerrainSquarePos, this._lastTerrainSquarePos);
+			//console.log(this._firstTerrainSquarePos, this._lastTerrainSquarePos);
 
 			const minI = Math.min(this._firstTerrainSquarePos.i, this._lastTerrainSquarePos.i);
 			const maxI = Math.max(this._firstTerrainSquarePos.i, this._lastTerrainSquarePos.i);
@@ -356,7 +357,7 @@ class BasicWorldDemo {
 					this._terrainSquareIncludedTiles.push( [i,j] );
 				}
 			}
-			console.log(this._terrainSquareIncludedTiles);
+			//console.log(this._terrainSquareIncludedTiles);
 		});
 	}
 	SUB_terrainSquareOnMouseMove() {
@@ -375,18 +376,37 @@ class BasicWorldDemo {
 		if (this._mouseMode != 'terrain' || this._terrainSquareIncludedTiles.length < 1) { return; }
 		for (let i = 0; i < this._terrainSquareIncludedTiles.length; i++) {
 			const tilePos = this._terrainSquareIncludedTiles[i];
-			console.log('increasingHeight');
 			this._worldFile.floor.arr[tilePos[0]][tilePos[1]][1] += 1;
 		}
 		this.SUB_saveWorldFile();
+		this.TERRAIN_clear();
+		this.SUB_createFloor();
+	}
+	TERRAIN_subtract() {
+		if (this._mouseMode != 'terrain' || this._terrainSquareIncludedTiles.length < 1) { return; }
+		for (let i = 0; i < this._terrainSquareIncludedTiles.length; i++) {
+			const tilePos = this._terrainSquareIncludedTiles[i];
+			this._worldFile.floor.arr[tilePos[0]][tilePos[1]][1] = Math.max(this._worldFile.floor.arr[tilePos[0]][tilePos[1]][1]-1, 0);
+		}
+		this.SUB_saveWorldFile();
+		this.TERRAIN_clear();
+		this.SUB_createFloor();
+	}
+	TERRAIN_clear() {
 		for (let i = 0; i < this._groundTiles1D.length; i++) {
 			const tile = this._groundTiles1D[i];
 			if (tile.userData.wallMesh) {
-				tile.userData.wallMesh.remove();
+				this._scene.remove(tile.userData.wallMesh);
+				tile.userData.wallMesh.geometry.dispose();
+				tile.userData.wallMesh.material.dispose();
+				delete this._groundTiles1D[i].userData.wallMesh;
 			}
-			tile.remove();
+			this._scene.remove(tile);
+			tile.geometry.dispose();
+			tile.material.dispose();
+			delete this._groundTiles1D[i];
 		}
-		this.SUB_createFloor();
+		this._groundTiles1D = new Array();
 	}
 
 	SUB_createSkybox() {

@@ -43,6 +43,10 @@
 		<button mode="eraser"><i class="fa-solid fa-eraser"></i></button>
 		<button mode="square"><i class="fa-solid fa-vector-square"></i></button>
 	</div>
+	<div class="bottomToolBox" id="terrainTools" style="display:none">
+		<button onclick="_APP.TERRAIN_add()"><i class="fa-solid fa-plus"></i></button>
+		<button onclick="_APP.TERRAIN_subtract()"><i class="fa-solid fa-minus"></i></button>
+	</div>
 	<script src="world.js" type="module"></script>
 	<script>
 		HTMLCollection.prototype.forEach = function (x) {return Array.from(this).forEach(x);}
@@ -55,18 +59,26 @@
 				btn.classList.add('active');
 
 				const mode = btn.getAttribute('mode');
-				if (mode == 'build') {
+				if (mode == 'terrain') {
+					_('buildingTools').style.display = 'none';
+					_('paintingTools').style.display = 'none';
+					_('terrainTools').style.display = '';
+				} else if (mode == 'build') {
 					_('buildingTools').style.display = '';
 					_('paintingTools').style.display = 'none';
+					_('terrainTools').style.display = 'none';
 				} else if (mode == 'paint') {
 					_('buildingTools').style.display = 'none';
 					_('paintingTools').style.display = '';
+					_('terrainTools').style.display = 'none';
 				} else if (mode == "drag") {
 					_('buildingTools').style.display = 'none';
 					_('paintingTools').style.display = 'none';
+					_('terrainTools').style.display = 'none';
 				} else {
 					_('buildingTools').style.display = 'none';
 					_('paintingTools').style.display = 'none';
+					_('terrainTools').style.display = 'none';
 				}
 				_APP.setMouseMode(mode);
 			})
