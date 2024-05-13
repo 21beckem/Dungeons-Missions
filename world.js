@@ -2,7 +2,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.mod
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/controls/OrbitControls.js';
 
 
-class BasicWorldDemo {
+class MissionMinecraft {
 	constructor() {
 		this.SUB_Initialize();
 	}
@@ -604,9 +604,6 @@ class BasicWorldDemo {
 		}
 	}
 }
-
-
-
-window.addEventListener('DOMContentLoaded', () => {
-	globalThis._APP = new BasicWorldDemo();
-});
+globalThis.InitMapWorld = () => {
+	globalThis._APP = new MissionMinecraft();
+}

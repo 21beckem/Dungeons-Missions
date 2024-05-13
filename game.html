@@ -4,7 +4,6 @@
 <head>
 	<title>Dungeons & Missions</title>
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<script src="https://kit.fontawesome.com/0bddc0a0f7.js" crossorigin="anonymous"></script>
 	<link rel="stylesheet" type="text/css" href="base.css">
 	<link rel="stylesheet" href="custom-select.css">
 	<link rel="stylesheet" href="fonts/minecraft.css">
@@ -65,6 +64,9 @@
 				<option onclick="console.log('pointer mode');" src="beckBtns/pointer.png" value="0"></option>
 			</select>
 		</div>
+		<div id="gameHosterDiv" style="display: flex; justify-content: center; align-items: center; filter: drop-shadow(2px 2px 6px #0000004f);">
+			<div id="beginHostingBtn" class="pixel-corners-4-4" onclick="startHosting(this)">Begin Hosting</div>
+		</div>
 		<div class="custom-select can-be-active" mode="pan" type="buttons">
 			<select>
 				<option onclick="console.log('pan mode');" src="beckBtns/view_active.png" value="0"></option>
@@ -75,29 +77,33 @@
 	<script src="world.js" type="module"></script>
 	<script src="custom-select.js"></script>
 	<script>
-		HTMLCollection.prototype.forEach = function (x) {return Array.from(this).forEach(x);}
-		function _(x) {return document.getElementById(x);}
-		var _APP = globalThis._APP;
+HTMLCollection.prototype.forEach = function (x) {return Array.from(this).forEach(x);}
+function _(x) {return document.getElementById(x);}
+var _APP = globalThis._APP;
 
-		document.querySelectorAll('DIV.custom-select.can-be-active').forEach(select => {
-			const btn = select.children[1];
-			btn.addEventListener('click', (e) => {
-				// change img icon
-				document.querySelectorAll('DIV.custom-select.can-be-active .select-selected').forEach(x => {
-					x.firstElementChild.src = x.firstElementChild.src.replace('_active','');
-				});
-				btn.firstElementChild.src = btn.firstElementChild.src.replace('.png','_active.png');
-
-				// show other buttons/panels if needed
-				const mode = select.getAttribute('mode');
-				if (mode == 'terrain') {
-					_('terrainTools').style.display = '';
-				} else {
-					_('terrainTools').style.display = 'none';
-				}
-				_APP.setMouseMode(mode);
-			})
+document.querySelectorAll('DIV.custom-select.can-be-active').forEach(select => {
+	const btn = select.children[1];
+	btn.addEventListener('click', (e) => {
+		// change img icon
+		document.querySelectorAll('DIV.custom-select.can-be-active .select-selected').forEach(x => {
+			x.firstElementChild.src = x.firstElementChild.src.replace('_active','');
 		});
+		btn.firstElementChild.src = btn.firstElementChild.src.replace('.png','_active.png');
+
+		// show other buttons/panels if needed
+		const mode = select.getAttribute('mode');
+		if (mode == 'terrain') {
+			_('terrainTools').style.display = '';
+		} else {
+			_('terrainTools').style.display = 'none';
+		}
+		_APP.setMouseMode(mode);
+	})
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+	InitMapWorld();
+});
 
 	</script>
 	<script src="playroom.js"></script>
