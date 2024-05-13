@@ -1,6 +1,7 @@
 .custom-select {
     position: relative;
     align-items: center;
+    filter: drop-shadow(2px 2px 6px #0000004f);
 }
 .custom-select select {
     display: none;
@@ -13,9 +14,6 @@
     cursor: pointer;
     user-select: none;
     width: fit-content;
-}
-.select-selected {
-    filter: drop-shadow(2px 2px 6px #0000004f);
 }
 .select-selected img {
     width: 60px;

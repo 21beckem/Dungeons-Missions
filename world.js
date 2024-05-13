@@ -69,6 +69,11 @@ class BasicWorldDemo {
 	SUB_saveWorldFile() {
 		this._worldFile.lastEdited = new Date();
 		localStorage.setItem('WorldFile-' + this._worldFile.id, JSON.stringify(this._worldFile));
+		if (Playroom.getRoomCode()) {
+			if (Playroom.isHost()) {
+				Playroom.setState('WorldFile', this._worldFile);
+			}
+		}
 	}
 
 	SUB_createCamera() {
