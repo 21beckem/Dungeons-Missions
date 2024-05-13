@@ -6,48 +6,49 @@
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	<script src="https://kit.fontawesome.com/0bddc0a0f7.js" crossorigin="anonymous"></script>
 	<link rel="stylesheet" type="text/css" href="base.css">
+	<link rel="stylesheet" href="custom-select.css">
 </head>
 
 <body>
-	<div id="topRightTools">
-		<button mode="terrain"><i class="fa-solid fa-mountain-city"></i></button>
-		<button mode="paint"><i class="fa-solid fa-paintbrush"></i></button>
-		<button mode="drag"><i class="fa-solid fa-hand-pointer"></i></button>
-		<button mode="pan" class="active"><i class="fa-solid fa-hand"></i></button>
-	</div>
-	<div class="bottomToolBox" id="paintingTools" style="display:none">
-		<select onchange="_APP._selectedPaint = this.value" id="paintingTexture">
-			<option selected value="cr8">Crate</option>
-			<option value="wud">Wood</option>
-			<option value="stn">Stone</option>
-			<option value="grs">Grass</option>
-			<option value="drt">Dirt</option>
-			<option value="snd">Sand</option>
-			<option value="cbl">Cobblestone</option>
-			<option value="blk">Black</option>
-			<option value="wtr">Water</option>
-		</select>
-		<button mode="paint" class="active"><i class="fa-solid fa-paintbrush"></i></button>
-		<button mode="eraser"><i class="fa-solid fa-eraser"></i></button>
-		<button mode="square"><i class="fa-solid fa-vector-square"></i></button>
-	</div>
-	<div class="bottomToolBox" id="buildingTools" style="display:none">
-		<select id="buildingTexture">
-			<option value="crate">Crate</option>
-			<option value="wood">Wood</option>
-			<option value="stone">Stone</option>
-			<option value="brick">Brick</option>
-			<option value="dirt">Dirt</option>
-		</select>
-		<button mode="build" class="active"><i class="fa-solid fa-hammer"></i></button>
-		<button mode="eraser"><i class="fa-solid fa-eraser"></i></button>
-		<button mode="square"><i class="fa-solid fa-vector-square"></i></button>
-	</div>
-	<div class="bottomToolBox" id="terrainTools" style="display:none">
-		<button onclick="_APP.TERRAIN_add()"><i class="fa-solid fa-plus"></i></button>
-		<button onclick="_APP.TERRAIN_subtract()"><i class="fa-solid fa-minus"></i></button>
+	<div id="topRowButtons">
+		<div class="custom-select" type="buttons">
+			<select>
+				<option onclick="console.log('terrain mode');" src="beckBtns/terrain.png" value="0"></option>
+			</select>
+		</div>
+		<div class="custom-select" type="buttons">
+			<select>
+				<option src="beckBtns/add_entity.png" value="0"></option>
+				<option onclick="console.log('clicked-player');" src="beckBtns/player.png" value="1"></option>
+				<option onclick="console.log('clicked-enemy');" src="beckBtns/enemy.png" value="2"></option>
+				<option onclick="console.log('clicked-npc');" src="beckBtns/npc.png" value="3"></option>
+				<option onclick="console.log('clicked-object');" src="beckBtns/object.png" value="4"></option>
+			</select>
+		</div>
+		<div class="custom-select" type="select" onchange="console.log( this.value )">
+			<select>
+				<option src="beckBtns/brush.png" value="0"></option>
+				<option src="beckBtns/brush.png" value="0"></option>
+				<option src="beckBtns/bucket.png" value="1"></option>
+				<option src="beckBtns/eraser.png" value="2"></option>	
+			</select>
+		</div>
+		<div class="custom-select" type="select" onchange="console.log( this.value )">
+			<select>
+				<option class="pixel-corners-6-6" src="textures/wud_16.png" value="0"></option>
+				<option class="pixel-corners-4-6" src="textures/wud_16.png" value="0"></option>
+				<option class="pixel-corners-4-6" src="textures/cr8_16.png" value="1"></option>
+				<option class="pixel-corners-4-6" src="textures/drt_16.png" value="2"></option>
+				<option class="pixel-corners-4-6" src="textures/grs_16.png" value="3"></option>
+				<option class="pixel-corners-4-6" src="textures/snd_16.png" value="4"></option>
+				<option class="pixel-corners-4-6" src="textures/wtr_16.png" value="5"></option>
+				<option class="pixel-corners-4-6" src="textures/cbl_16.png" value="6"></option>
+				<option class="pixel-corners-4-6" src="beckBtns/blk.png" value="7"></option>
+			</select>
+		</div>
 	</div>
 	<script src="world.js" type="module"></script>
+	<script src="custom-select.js"></script>
 	<script>
 		HTMLCollection.prototype.forEach = function (x) {return Array.from(this).forEach(x);}
 		function _(x) {return document.getElementById(x);}

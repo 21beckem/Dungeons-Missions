@@ -18,53 +18,72 @@ canvas {
 	touch-action: none;
 }
 
-#topRightTools {
-	position: absolute;
-	top: 75px;
-	right: 5px;
+#topRowButtons {
+	top: 10px;
+	position: fixed;
 	display: flex;
-	flex-direction: column;
-}
-
-#topRightTools button {
-	border-radius: 50%;
-	border: none;
-	background: white;
-	padding: 15px;
-	cursor: pointer;
-	margin: 5px;
-	font-size: 25px;
-}
-
-#topRightTools button.active {
-	background: #c0bfbc;
-}
-
-.bottomToolBox {
-	position: absolute;
-	bottom: 5px;
-	left: 50%;
-	transform: translateX(-50%);
-	display: flex;
-	background-color: white;
-	width: 90%;
-	flex-wrap: wrap;
-	justify-content: space-between;
-}
-
-.bottomToolBox select {
 	width: 100%;
+	justify-content: space-around;
 }
 
-.bottomToolBox * {
-	border: none;
-	background: white;
-	padding: 15px;
-	cursor: pointer;
-	margin: 0px;
-	font-size: 20px;
+.pixel-corners-4-6 {
+	clip-path: polygon(0px calc(100% - 16px),
+			4px calc(100% - 16px),
+			4px calc(100% - 8px),
+			8px calc(100% - 8px),
+			8px calc(100% - 4px),
+			16px calc(100% - 4px),
+			16px 100%,
+			calc(100% - 16px) 100%,
+			calc(100% - 16px) calc(100% - 4px),
+			calc(100% - 8px) calc(100% - 4px),
+			calc(100% - 8px) calc(100% - 8px),
+			calc(100% - 4px) calc(100% - 8px),
+			calc(100% - 4px) calc(100% - 16px),
+			100% calc(100% - 16px),
+			100% 16px,
+			calc(100% - 4px) 16px,
+			calc(100% - 4px) 8px,
+			calc(100% - 8px) 8px,
+			calc(100% - 8px) 4px,
+			calc(100% - 16px) 4px,
+			calc(100% - 16px) 0px,
+			16px 0px,
+			16px 4px,
+			8px 4px,
+			8px 8px,
+			4px 8px,
+			4px 16px,
+			0px 16px);
 }
 
-.bottomToolBox *.active {
-	background: #c0bfbc;
+.pixel-corners-6-6 {
+	clip-path: polygon(0px calc(100% - 24px),
+			6px calc(100% - 24px),
+			6px calc(100% - 12px),
+			12px calc(100% - 12px),
+			12px calc(100% - 6px),
+			24px calc(100% - 6px),
+			24px 100%,
+			calc(100% - 24px) 100%,
+			calc(100% - 24px) calc(100% - 6px),
+			calc(100% - 12px) calc(100% - 6px),
+			calc(100% - 12px) calc(100% - 12px),
+			calc(100% - 6px) calc(100% - 12px),
+			calc(100% - 6px) calc(100% - 24px),
+			100% calc(100% - 24px),
+			100% 24px,
+			calc(100% - 6px) 24px,
+			calc(100% - 6px) 12px,
+			calc(100% - 12px) 12px,
+			calc(100% - 12px) 6px,
+			calc(100% - 24px) 6px,
+			calc(100% - 24px) 0px,
+			24px 0px,
+			24px 6px,
+			12px 6px,
+			12px 12px,
+			6px 12px,
+			6px 24px,
+			0px 24px);
 }
