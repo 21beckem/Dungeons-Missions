@@ -171,7 +171,7 @@ class BasicWorldDemo {
 	}
 
 	SUB_setupPainting() {
-		this._selectedPaint = 'cr8';
+		this._selectedPaint = 'wud';
 		this._drawing = false;
 		this.SUB_getPaints();
 
@@ -590,7 +590,7 @@ class BasicWorldDemo {
 		if (mode == 'terrain') {
 			this._controls.enabled = false;
 			this._terrainSquare.material.visible = true;
-		} else if (mode == 'paint') {
+		} else if (mode == 'paint' || mode == 'drag') {
 			this._controls.enabled = false;
 			this._terrainSquare.material.visible = false;
 		} else {

@@ -11,7 +11,7 @@
 
 <body>
 	<div id="topRowButtons">
-		<div class="custom-select" type="buttons">
+		<div class="custom-select can-be-active" mode="terrain" type="buttons">
 			<select>
 				<option onclick="console.log('terrain mode');" src="beckBtns/terrain.png" value="0"></option>
 			</select>
@@ -25,7 +25,7 @@
 				<option onclick="console.log('clicked-object');" src="beckBtns/object.png" value="4"></option>
 			</select>
 		</div>
-		<div class="custom-select" type="select" onchange="console.log( this.value )">
+		<div class="custom-select can-be-active" mode="paint" type="select" onchange="console.log( this.value )">
 			<select>
 				<option src="beckBtns/brush.png" value="0"></option>
 				<option src="beckBtns/brush.png" value="0"></option>
@@ -33,20 +33,39 @@
 				<option src="beckBtns/eraser.png" value="2"></option>	
 			</select>
 		</div>
-		<div class="custom-select" type="select" onchange="console.log( this.value )">
+		<div class="custom-select" type="select" onchange="_APP._selectedPaint = this.value">
 			<select>
-				<option class="pixel-corners-6-6" src="textures/wud_16.png" value="0"></option>
-				<option class="pixel-corners-4-6" src="textures/wud_16.png" value="0"></option>
-				<option class="pixel-corners-4-6" src="textures/cr8_16.png" value="1"></option>
-				<option class="pixel-corners-4-6" src="textures/drt_16.png" value="2"></option>
-				<option class="pixel-corners-4-6" src="textures/grs_16.png" value="3"></option>
-				<option class="pixel-corners-4-6" src="textures/snd_16.png" value="4"></option>
-				<option class="pixel-corners-4-6" src="textures/wtr_16.png" value="5"></option>
-				<option class="pixel-corners-4-6" src="textures/cbl_16.png" value="6"></option>
-				<option class="pixel-corners-4-6" src="beckBtns/blk.png" value="7"></option>
+				<option class="pixel-corners-6-6" src="textures/wud_16.png" value="wud"></option>
+				<option class="pixel-corners-4-6" src="textures/wud_16.png" value="wud"></option>
+				<option class="pixel-corners-4-6" src="textures/cr8_16.png" value="cr8"></option>
+				<option class="pixel-corners-4-6" src="textures/drt_16.png" value="drt"></option>
+				<option class="pixel-corners-4-6" src="textures/grs_16.png" value="grs"></option>
+				<option class="pixel-corners-4-6" src="textures/snd_16.png" value="snd"></option>
+				<option class="pixel-corners-4-6" src="textures/wtr_16.png" value="wtr"></option>
+				<option class="pixel-corners-4-6" src="textures/cbl_16.png" value="cbl"></option>
+				<option class="pixel-corners-4-6" src="beckBtns/blk.png" value="blk"></option>
 			</select>
 		</div>
 	</div>
+
+	<div id="terrainTools" style="display: none;">
+		<button onclick="_APP.TERRAIN_add()"><img src="beckBtns/plus.png"></button>
+		<button onclick="_APP.TERRAIN_subtract()"><img src="beckBtns/minus.png"></button>
+	</div>
+
+	<div id="bottomRowButtons">
+		<div class="custom-select can-be-active" mode="drag" type="buttons">
+			<select>
+				<option onclick="console.log('pointer mode');" src="beckBtns/pointer.png" value="0"></option>
+			</select>
+		</div>
+		<div class="custom-select can-be-active" mode="pan" type="buttons">
+			<select>
+				<option onclick="console.log('pan mode');" src="beckBtns/view_active.png" value="0"></option>
+			</select>
+		</div>
+	</div>
+
 	<script src="world.js" type="module"></script>
 	<script src="custom-select.js"></script>
 	<script>
@@ -54,59 +73,25 @@
 		function _(x) {return document.getElementById(x);}
 		var _APP = globalThis._APP;
 
-		_('topRightTools').children.forEach(btn => {
-			btn.addEventListener('click', () => {
-				_('topRightTools').children.forEach(x => x.classList.remove('active'));
-				btn.classList.add('active');
+		document.querySelectorAll('DIV.custom-select.can-be-active').forEach(select => {
+			const btn = select.children[1];
+			btn.addEventListener('click', (e) => {
+				// change img icon
+				document.querySelectorAll('DIV.custom-select.can-be-active .select-selected').forEach(x => {
+					x.firstElementChild.src = x.firstElementChild.src.replace('_active','');
+				});
+				btn.firstElementChild.src = btn.firstElementChild.src.replace('.png','_active.png');
 
-				const mode = btn.getAttribute('mode');
+				// show other buttons/panels if needed
+				const mode = select.getAttribute('mode');
 				if (mode == 'terrain') {
-					_('buildingTools').style.display = 'none';
-					_('paintingTools').style.display = 'none';
 					_('terrainTools').style.display = '';
-				} else if (mode == 'build') {
-					_('buildingTools').style.display = '';
-					_('paintingTools').style.display = 'none';
-					_('terrainTools').style.display = 'none';
-				} else if (mode == 'paint') {
-					_('buildingTools').style.display = 'none';
-					_('paintingTools').style.display = '';
-					_('terrainTools').style.display = 'none';
-				} else if (mode == "drag") {
-					_('buildingTools').style.display = 'none';
-					_('paintingTools').style.display = 'none';
-					_('terrainTools').style.display = 'none';
 				} else {
-					_('buildingTools').style.display = 'none';
-					_('paintingTools').style.display = 'none';
 					_('terrainTools').style.display = 'none';
 				}
 				_APP.setMouseMode(mode);
 			})
 		});
-
-		_('paintingTools').querySelectorAll('BUTTON[mode]').forEach(btn => {
-			btn.addEventListener('click', () => {
-				_('paintingTools').children.forEach(x => x.classList.remove('active'));
-				btn.classList.add('active');
-				//_APP.setBuildingMode(mode);
-			})
-		});
-
-		_('buildingTools').querySelectorAll('BUTTON[mode]').forEach(btn => {
-			btn.addEventListener('click', () => {
-				_('buildingTools').children.forEach(x => x.classList.remove('active'));
-				btn.classList.add('active');
-				//_APP.setBuildingMode(mode);
-			})
-		});
-
-		function doubleCheckClear() {
-			// if (confirm('Are you sure you want to clear the entire painted map?')) {
-			// alert('clearing');
-			// }
-		}
-
 
 	</script>
 </body>
