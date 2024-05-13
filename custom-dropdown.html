@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+.pixel-corners-4-6 {
+  clip-path: polygon(
+    0px calc(100% - 16px),
+    4px calc(100% - 16px),
+    4px calc(100% - 8px),
+    8px calc(100% - 8px),
+    8px calc(100% - 4px),
+    16px calc(100% - 4px),
+    16px 100%,
+    calc(100% - 16px) 100%,
+    calc(100% - 16px) calc(100% - 4px),
+    calc(100% - 8px) calc(100% - 4px),
+    calc(100% - 8px) calc(100% - 8px),
+    calc(100% - 4px) calc(100% - 8px),
+    calc(100% - 4px) calc(100% - 16px),
+    100% calc(100% - 16px),
+    100% 16px,
+    calc(100% - 4px) 16px,
+    calc(100% - 4px) 8px,
+    calc(100% - 8px) 8px,
+    calc(100% - 8px) 4px,
+    calc(100% - 16px) 4px,
+    calc(100% - 16px) 0px,
+    16px 0px,
+    16px 4px,
+    8px 4px,
+    8px 8px,
+    4px 8px,
+    4px 16px,
+    0px 16px
+  );
+}
+.pixel-corners-6-6,
+.pixel-corners-6-6--wrapper {
+  clip-path: polygon(0px calc(100% - 24px),
+    6px calc(100% - 24px),
+    6px calc(100% - 12px),
+    12px calc(100% - 12px),
+    12px calc(100% - 6px),
+    24px calc(100% - 6px),
+    24px 100%,
+    calc(100% - 24px) 100%,
+    calc(100% - 24px) calc(100% - 6px),
+    calc(100% - 12px) calc(100% - 6px),
+    calc(100% - 12px) calc(100% - 12px),
+    calc(100% - 6px) calc(100% - 12px),
+    calc(100% - 6px) calc(100% - 24px),
+    100% calc(100% - 24px),
+    100% 24px,
+    calc(100% - 6px) 24px,
+    calc(100% - 6px) 12px,
+    calc(100% - 12px) 12px,
+    calc(100% - 12px) 6px,
+    calc(100% - 24px) 6px,
+    calc(100% - 24px) 0px,
+    24px 0px,
+    24px 6px,
+    12px 6px,
+    12px 12px,
+    6px 12px,
+    6px 24px,
+    0px 24px);
+  position: relative;
+}
+.pixel-corners-6-6 {
+  border: 6px solid transparent;
+}
+.pixel-corners-6-6--wrapper {
+  width: fit-content;
+  height: fit-content;
+}
+.pixel-corners-6-6--wrapper .pixel-corners-6-6 {
+  display: block;
+  clip-path: polygon(6px 24px,
+    12px 24px,
+    12px 12px,
+    24px 12px,
+    24px 6px,
+    calc(100% - 24px) 6px,
+    calc(100% - 24px) 12px,
+    calc(100% - 12px) 12px,
+    calc(100% - 12px) 24px,
+    calc(100% - 6px) 24px,
+    calc(100% - 6px) calc(100% - 24px),
+    calc(100% - 12px) calc(100% - 24px),
+    calc(100% - 12px) calc(100% - 12px),
+    calc(100% - 24px) calc(100% - 12px),
+    calc(100% - 24px) calc(100% - 6px),
+    24px calc(100% - 6px),
+    24px calc(100% - 12px),
+    12px calc(100% - 12px),
+    12px calc(100% - 24px),
+    6px calc(100% - 24px));
+}
+.pixel-corners-6-6::after,
+.pixel-corners-6-6--wrapper::after {
+  content: "";
+  position: absolute;
+  clip-path: polygon(0px calc(100% - 24px),
+    6px calc(100% - 24px),
+    6px calc(100% - 12px),
+    12px calc(100% - 12px),
+    12px calc(100% - 6px),
+    24px calc(100% - 6px),
+    24px 100%,
+    calc(100% - 24px) 100%,
+    calc(100% - 24px) calc(100% - 6px),
+    calc(100% - 12px) calc(100% - 6px),
+    calc(100% - 12px) calc(100% - 12px),
+    calc(100% - 6px) calc(100% - 12px),
+    calc(100% - 6px) calc(100% - 24px),
+    100% calc(100% - 24px),
+    100% 24px,
+    calc(100% - 6px) 24px,
+    calc(100% - 6px) 12px,
+    calc(100% - 12px) 12px,
+    calc(100% - 12px) 6px,
+    calc(100% - 24px) 6px,
+    calc(100% - 24px) 0px,
+    24px 0px,
+    24px 6px,
+    12px 6px,
+    12px 12px,
+    6px 12px,
+    6px 24px,
+    0px 24px,
+    0px 50%,
+    6px 50%,
+    6px 24px,
+    12px 24px,
+    12px 12px,
+    24px 12px,
+    24px 6px,
+    calc(100% - 24px) 6px,
+    calc(100% - 24px) 12px,
+    calc(100% - 12px) 12px,
+    calc(100% - 12px) 24px,
+    calc(100% - 6px) 24px,
+    calc(100% - 6px) calc(100% - 24px),
+    calc(100% - 12px) calc(100% - 24px),
+    calc(100% - 12px) calc(100% - 12px),
+    calc(100% - 24px) calc(100% - 12px),
+    calc(100% - 24px) calc(100% - 6px),
+    24px calc(100% - 6px),
+    24px calc(100% - 12px),
+    12px calc(100% - 12px),
+    12px calc(100% - 24px),
+    6px calc(100% - 24px),
+    6px 50%,
+    0px 50%);
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  display: block;
+  pointer-events: none;
+}
+.pixel-corners-6-6::after {
+  margin: -6px;
+}
+.custom-select {
+    position: relative;
+}
+.custom-select select {
+    display: none;
+}
+.select-items div,
+.select-selected {
+    color: #ffffff;
+    padding: 0;
+    border: 1px solid transparent;
+    cursor: pointer;
+    user-select: none;
+    width: fit-content;
+}
+.select-selected img {
+    width: 60px;
+    image-rendering: pixelated;
+}
+.select-items div img {
+    width: 50px;
+    image-rendering: pixelated;
+    /* padding: 0px 10px; */
+}
+.select-items {
+    padding-top: 4px;
+    position: absolute;
+    background-color: white;
+    top: calc(100% + 5px);
+    left: 5px;
+    z-index: 99;
+    width: fit-content;
+    max-height: 300px;
+    overflow-y: scroll;
+}
+.select-hide {
+    display: none;
+}
+    </style>
+</head>
+
+<body style="background-color: gray">
+
+    <h2>Custom Select</h2>
+
+    <div class="custom-select">
+        <select>
+            <option class="pixel-corners-6-6" src="textures/wud_16.png" value="0"></option>
+            <option class="pixel-corners-4-6" src="textures/wud_16.png" value="0"></option>
+            <option class="pixel-corners-4-6" src="textures/cr8_16.png" value="1"></option>
+            <option class="pixel-corners-4-6" src="textures/drt_16.png" value="2"></option>
+            <option class="pixel-corners-4-6" src="textures/grs_16.png" value="3"></option>
+            <option class="pixel-corners-4-6" src="textures/snd_16.png" value="4"></option>
+            <option class="pixel-corners-4-6" src="textures/wtr_16.png" value="5"></option>
+            <option class="pixel-corners-4-6" src="textures/cbl_16.png" value="6"></option>
+            <option class="pixel-corners-4-6" src="beckBtns/blk.png" value="7"></option>
+        </select>
+    </div>
+
+    <div class="custom-select">
+        <select>
+            <option src="beckBtns/add_entity.png" value="0"></option>
+            <option src="beckBtns/add_entity.png" value="0"></option>
+            <option src="beckBtns/brush.png" value="1"></option>
+            <option src="beckBtns/enemy.png" value="2"></option>
+            <option src="beckBtns/hammer.png" value="3"></option>
+            <option src="beckBtns/npc.png" value="4"></option>
+        </select>
+    </div>
+
+    <script>
+        var x, i, j, l, ll, selElmnt, a, b, c;
+        /*look for any elements with the class "custom-select":*/
+        x = document.getElementsByClassName("custom-select");
+        l = x.length;
+        for (i = 0; i < l; i++) {
+            selElmnt = x[i].getElementsByTagName("select")[0];
+            ll = selElmnt.length;
+            /*for each element, create a new DIV that will act as the selected item:*/
+            a = document.createElement("DIV");
+            a.setAttribute("class", "select-selected");
+            a.innerHTML = '<img src="' + selElmnt.options[selElmnt.selectedIndex].getAttribute('src') + '">';
+            a.firstElementChild.classList.add( selElmnt.options[selElmnt.selectedIndex].getAttribute('class') );
+            x[i].appendChild(a);
+            /*for each element, create a new DIV that will contain the option list:*/
+            b = document.createElement("DIV");
+            b.setAttribute("class", "select-items select-hide pixel-corners-4-6");
+            for (j = 1; j < ll; j++) {
+                /*for each option in the original select element,
+                create a new DIV that will act as an option item:*/
+                c = document.createElement("DIV");
+                c.innerHTML = '<img src="' + selElmnt.options[j].getAttribute('src') + '">';
+                c.firstElementChild.classList.add( selElmnt.options[j].getAttribute('class') );
+                c.addEventListener("click", function (e) {
+                    var y, i, k, s, h, sl, yl;
+                    s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+                    sl = s.length;
+                    h = this.parentNode.previousSibling;
+                    for (i = 0; i < sl; i++) {
+                        if (s.options[i].src == this.src) {
+                            s.selectedIndex = i;
+                            h.firstElementChild.src = this.firstElementChild.src;
+                            break;
+                        }
+                    }
+                    h.click();
+                });
+                b.appendChild(c);
+            }
+            x[i].appendChild(b);
+            a.addEventListener("click", function (e) {
+                e.stopPropagation();
+                closeAllSelect(this);
+                this.nextSibling.classList.toggle("select-hide");
+            });
+        }
+        function closeAllSelect(elmnt) {
+            var x, y, i, xl, yl, arrNo = [];
+            x = document.getElementsByClassName("select-items");
+            y = document.getElementsByClassName("select-selected");
+            xl = x.length;
+            yl = y.length;
+            for (i = 0; i < yl; i++) {
+                if (elmnt == y[i]) {
+                    arrNo.push(i)
+                } else {
+                    y[i].classList.remove("select-arrow-active");
+                }
+            }
+            for (i = 0; i < xl; i++) {
+                if (arrNo.indexOf(i)) {
+                    x[i].classList.add("select-hide");
+                }
+            }
+        }
+        document.addEventListener("click", closeAllSelect);
+    </script>
+
+</body>
+
+</html>
