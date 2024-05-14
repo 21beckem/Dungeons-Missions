@@ -195,6 +195,7 @@ class MissionMinecraft {
 
 	SUB_setupPainting() {
 		this._selectedPaint = 'wud';
+		this._paintTool = 'brush';
 		this._drawing = false;
 		this.SUB_getPaints();
 
@@ -212,14 +213,23 @@ class MissionMinecraft {
 
 			if (found.length > 0) {
 				if (found[0].object.userData.ground) {
-					this._drawing = true;
-					this.SUB_paintTileAtThisIntersect(found[0]);
+					if (this._paintTool != 'bucket') {
+						this._drawing = true;
+						this.SUB_paintTileAtThisIntersect(found[0]);
+					}
 				}
 			}
 		});
 		this._threejs.domElement.addEventListener('pointerup', event => {
 			//console.log('up');
 			if (this._mouseMode != 'paint') { return; }
+			if (this._paintTool == 'brush') {
+				this._clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+				this._clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+				this._raycaster.setFromCamera(this._clickMouse, this._camera);
+				let found = this._raycaster.intersectObjects(this._groundTiles1D);
+				this.SUB_bucketFillAtThisIntersect(found[0]);
+			}
 			this._drawing = false;
 			this.SUB_saveWorldFile();
 		});
@@ -229,6 +239,28 @@ class MissionMinecraft {
 		//console.log(intersect.point);
 		this._worldFile.floor.arr[intersect.object.userData.tilePos.i][intersect.object.userData.tilePos.j][0] = this._selectedPaint;
 		intersect.object.material = this._paints[this._selectedPaint];
+	}
+	SUB_bucketFillAtThisIntersect(intersect) {
+		const bucketFillMatrix = (matrix, row, col) => {
+			if ( !(row >= 0 && row < matrix.length && col >= 0 && col < matrix[row].length) ) {
+				return;
+			}
+			
+			// return if different than original clicked tile in terms of paint or height
+			if (matrix[row][col] == 1) {
+				return;
+			}
+			
+			// set to new
+			matrix[row][col] = 1;
+
+			bucketFillMatrix(matrix, row + 1, col);
+			bucketFillMatrix(matrix, row - 1, col);
+			bucketFillMatrix(matrix, row, col + 1 );
+			bucketFillMatrix(matrix, row, col -1 );
+		}
+		let pos = intersect.object.userData.tilePos;
+		bucketFillMatrix(this._worldFile.floor.arr, pos.i, pos.j);
 	}
 	SUB_getPaints() {
 		const textures = [
