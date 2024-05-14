@@ -4,11 +4,11 @@ import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.118/examples
 
 class MissionMinecraft {
 	constructor(mode) {
-		this.SUB_Initialize(mode);
+		this.playMode = mode;
+		this.runningMulti = false;
 	}
 
-	SUB_Initialize(playMode) {
-		this.playMode = playMode;
+	InitializeWorld() {
 		this._threejs = new THREE.WebGLRenderer({
 			antialias: true,
 		});
@@ -49,6 +49,7 @@ class MissionMinecraft {
 		this.SUB_createSkybox();
 
 		this.SUB_createFloor();
+		this.SUB_saveWorldFile();
 
 		this.SUB_createTokens();
 
@@ -67,9 +68,12 @@ class MissionMinecraft {
 				console.log(e);
 				location.href = 'index.html';
 			}
+			Playroom.setState('WorldFile', this._worldFile);
 		} else {
 			try {
-				this._worldFile = Playroom.getItem('WorldFile');
+				this._worldFile = Playroom.getState('WorldFile');
+				console.log(Playroom.getRoomCode());
+				console.log(this._worldFile);
 				if (!this._worldFile) {
 					location.href = 'joinGame.html';
 				}
@@ -80,12 +84,13 @@ class MissionMinecraft {
 		}
 	}
 	SUB_saveWorldFile() {
+		if (JSON.stringify(this._worldFile) == localStorage.getItem('WorldFile-' + this._worldFile.id)) {
+			return;
+		}
 		this._worldFile.lastEdited = new Date();
 		localStorage.setItem('WorldFile-' + this._worldFile.id, JSON.stringify(this._worldFile));
-		if (Playroom.getRoomCode()) {
-			if (Playroom.isHost()) {
-				Playroom.setState('WorldFile', this._worldFile);
-			}
+		if (this.runningMulti && this.playMode == 'local') {
+			Playroom.setState('WorldFile', this._worldFile);
 		}
 	}
 
@@ -216,13 +221,13 @@ class MissionMinecraft {
 			//console.log('up');
 			if (this._mouseMode != 'paint') { return; }
 			this._drawing = false;
+			this.SUB_saveWorldFile();
 		});
 	}
 	SUB_paintTileAtThisIntersect(intersect) {
 		//console.log(intersect);
 		//console.log(intersect.point);
 		this._worldFile.floor.arr[intersect.object.userData.tilePos.i][intersect.object.userData.tilePos.j][0] = this._selectedPaint;
-		this.SUB_saveWorldFile();
 		intersect.object.material = this._paints[this._selectedPaint];
 	}
 	SUB_getPaints() {
@@ -548,7 +553,6 @@ class MissionMinecraft {
 				makeLittleGroundPlane((i * this._squareSize) - (realWorldSize / 2) + (this._squareSize / 2), (j * this._squareSize) - (realWorldSize / 2) + (this._squareSize / 2), i, j);
 			}
 		}
-		this.SUB_saveWorldFile();
 
 
 		const divisions = realWorldSize / gridSquareSize;
@@ -586,12 +590,66 @@ class MissionMinecraft {
 
 	SUB_RAF() {
 		requestAnimationFrame(() => {
+			let playFile = Playroom.getState('WorldFile');
+			if (playFile) {
+				if (this._worldFile.lastEdited != playFile.lastEdited) {
+					this._worldFile = playFile;
+					this.TERRAIN_clear();
+					this.SUB_createFloor();
+				}
+			}
 			this.SUB_dragObjectEveryFrame();
 			this._threejs.render(this._scene, this._camera);
 			this.SUB_RAF();
 		});
 	}
-	// above is all jobbig stuff to start scene and such
+	// # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+	//  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+	// # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+	//
+	//                                              PLAYROOM TIME
+	//
+	// # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+	//  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+	// # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+	async startHosting(beginHostingBtn) {
+		if (Playroom.getRoomCode()) {
+			// copy the code
+			navigator.clipboard.writeText(Playroom.getRoomCode());
+		} else {
+			// start the loader
+			beginHostingBtn.innerHTML = '<div class="loader" style="margin-left: calc(50% - 15px);"></div>';
+			// start multiplayer
+			await Playroom.insertCoin({skipLobby: true}, () => {
+				beginHostingBtn.innerHTML = Playroom.getRoomCode();
+				this.runningMulti = true;
+			
+				Playroom.setState('WorldFile', this._worldFile);
+			});
+		}
+	}
+	async joinGameWithCode(beginHostingBtn, code) {
+		await Playroom.insertCoin({
+			skipLobby: true,
+			roomCode: code
+		}, () => {
+			beginHostingBtn.innerHTML = code;
+		});
+		this.runningMulti = true;
+		await sleep(100);
+	}
+	getRoomCode() {
+		return Playroom.getRoomCode();
+	}
+	// # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+	//  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+	// # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+	//
+	//                                        USER INTERFACE FUNCTIONS
+	//
+	// # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+	//  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+	// # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 	makeBox(x, y, z) {
 		const box = new THREE.Mesh(
 			new THREE.BoxGeometry(2, 2, 2),
@@ -617,6 +675,11 @@ class MissionMinecraft {
 		}
 	}
 }
-globalThis.InitMapWorld = (mode='local') => {
-	globalThis._APP = new MissionMinecraft(mode);
+globalThis.InitMissionMinecraft = (mode='local') => {
+	if (!globalThis._APP) {
+		globalThis._APP = new MissionMinecraft(mode);
+	}
+}
+function sleep(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
 }

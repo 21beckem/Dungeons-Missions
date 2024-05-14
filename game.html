@@ -65,7 +65,7 @@
 			</select>
 		</div>
 		<div id="gameHosterDiv" style="display: flex; justify-content: center; align-items: center; filter: drop-shadow(2px 2px 6px #0000004f);">
-			<div id="beginHostingBtn" class="pixel-corners-4-4" onclick="startHosting()"><div class="loader" style="margin-left: calc(50% - 19px);"></div></div>
+			<div id="beginHostingBtn" class="pixel-corners-4-4" onclick="_APP.startHosting(this)"><div class="loader" style="margin-left: calc(50% - 19px);"></div></div>
 		</div>
 		<div class="custom-select can-be-active" mode="pan" type="buttons">
 			<select>
@@ -101,22 +101,26 @@ document.querySelectorAll('DIV.custom-select.can-be-active').forEach(select => {
 	})
 });
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
 	let gameCode = localStorage.getItem('worldIdToOpen');
+	if (!gameCode) {
+		location.href = '/index.html';
+	}
 	if (gameCode.includes('Playroom_')) {
 		// join game then create world
+		InitMissionMinecraft('Playroom');
 		gameCode = gameCode.replace('Playroom_', '');
-		joinHostedMap(gameCode);
-		InitMapWorld('Playroom');
+		await _APP.joinGameWithCode(_('beginHostingBtn'), gameCode);
+		_APP.InitializeWorld();
 	} else {
-		InitMapWorld('local');
+		InitMissionMinecraft('local');
+		_APP.InitializeWorld();
 		_('beginHostingBtn').innerHTML = 'Begin Hosting';
 		_('topRowButtons').style.display = '';
 	}
 });
 
 	</script>
-	<script src="playroom.js"></script>
 </body>
 
 </html>

@@ -1,4 +1,5 @@
 let roomCode;
+let Playroom = globalThis.Playroom;
 async function startHosting() {
     if (Playroom.getRoomCode()) {
         // copy the code
