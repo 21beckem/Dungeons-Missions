@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Dungeons & Missions</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" href="fonts/bloxat.css">
+    <link rel="stylesheet" href="fonts/minecraft.css">
+    <link rel="stylesheet" href="base.css">
+</head>
+
+<body>
+	<script src="jsalert.js"></script>
+	<style>
+		html,
+		body {
+			margin: 0;
+			padding: 0;
+			width: 100%;
+			height: 100%;
+			background-color: #616161;
+			font-family: minecraft;
+		}
+
+		#TopBanner {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			background-color: transparent;
+			color: white;
+			text-align: center;
+			font-size: 40px;
+			font-family: bloxat;
+			padding-top: 35px;
+			padding-bottom: 15px;
+			border-bottom: solid white 7px;
+		}
+        #codeInput {
+            text-align: center;
+            padding: 5px;
+            font-family: minecraft;
+            width: 150px;
+            font-size: 30px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+        }
+        #joinGameBtn {
+            font-family: minecraft;
+            padding: 10px;
+            background-color: #16b716;
+            color: white;
+            border: none;
+            font-size: 25px;
+            cursor: pointer;
+        }
+        #joinGameBtn:disabled {
+            cursor: default;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+	</style>
+	</head>
+
+	<body>
+		<canvas id="makeImgCanvas" style="display: none;"></canvas>
+		<div id="TopBanner">
+			JOIN GAME
+		</div>
+		<div style="width: 10px; height: 130px;"></div>
+
+		<center>
+            <h2 style="color: white;">Code</h2>
+            <input class="pixel-corners-4-4" id="codeInput" type="text" oninput="onCodeInput(this)">
+            <br><br><br>
+            <button id="joinGameBtn" class="pixel-corners-4-4" disabled onclick="joinGame()">JOIN GAME</button>
+        </center>
+        <script>
+function _(x) {return document.getElementById(x);}
+function onCodeInput(cdIn) {
+    _('joinGameBtn').disabled = cdIn.value.length < 4;
+}
+function joinGame() {
+    localStorage.setItem('worldIdToOpen', 'Playroom_' + _('codeInput').value);
+    location.href = 'game.html';
+}
+        </script>
+	</body>
+</html>

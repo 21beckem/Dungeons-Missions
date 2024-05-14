@@ -15,7 +15,7 @@
 	<script src="https://cdn.joinplayroom.com/react@18.2.0/umd/react.development.js"></script>
 	<script src="https://cdn.joinplayroom.com/react-dom@18.2.0/umd/react-dom.development.js"></script>
 	<script src="https://cdn.joinplayroom.com/playroomkit/multiplayer.umd.js"></script>
-	<div id="topRowButtons">
+	<div id="topRowButtons" style="display: none;">
 		<div class="custom-select can-be-active" mode="terrain" type="buttons">
 			<select>
 				<option onclick="console.log('terrain mode');" src="beckBtns/terrain.png" value="0"></option>
@@ -65,7 +65,7 @@
 			</select>
 		</div>
 		<div id="gameHosterDiv" style="display: flex; justify-content: center; align-items: center; filter: drop-shadow(2px 2px 6px #0000004f);">
-			<div id="beginHostingBtn" class="pixel-corners-4-4" onclick="startHosting(this)">Begin Hosting</div>
+			<div id="beginHostingBtn" class="pixel-corners-4-4" onclick="startHosting()"><div class="loader" style="margin-left: calc(50% - 19px);"></div></div>
 		</div>
 		<div class="custom-select can-be-active" mode="pan" type="buttons">
 			<select>
@@ -102,7 +102,17 @@ document.querySelectorAll('DIV.custom-select.can-be-active').forEach(select => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
-	InitMapWorld();
+	let gameCode = localStorage.getItem('worldIdToOpen');
+	if (gameCode.includes('Playroom_')) {
+		// join game then create world
+		gameCode = gameCode.replace('Playroom_', '');
+		joinHostedMap(gameCode);
+		InitMapWorld('Playroom');
+	} else {
+		InitMapWorld('local');
+		_('beginHostingBtn').innerHTML = 'Begin Hosting';
+		_('topRowButtons').style.display = '';
+	}
 });
 
 	</script>

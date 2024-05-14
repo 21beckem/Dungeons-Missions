@@ -3,11 +3,12 @@ import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.118/examples
 
 
 class MissionMinecraft {
-	constructor() {
-		this.SUB_Initialize();
+	constructor(mode) {
+		this.SUB_Initialize(mode);
 	}
 
-	SUB_Initialize() {
+	SUB_Initialize(playMode) {
+		this.playMode = playMode;
 		this._threejs = new THREE.WebGLRenderer({
 			antialias: true,
 		});
@@ -55,15 +56,27 @@ class MissionMinecraft {
 	}
 
 	SUB_loadWorldFile() {
-		try {
-			let idToOpen = localStorage.getItem('worldIdToOpen');
-			this._worldFile = JSON.parse(localStorage.getItem('WorldFile-' + idToOpen));
-			if (!idToOpen || !this._worldFile) {
+		if (this.playMode == 'local') {
+			try {
+				let idToOpen = localStorage.getItem('worldIdToOpen');
+				this._worldFile = JSON.parse(localStorage.getItem('WorldFile-' + idToOpen));
+				if (!idToOpen || !this._worldFile) {
+					location.href = 'index.html';
+				}
+			} catch (e) {
+				console.log(e);
 				location.href = 'index.html';
 			}
-		} catch (e) {
-			console.log(e);
-			location.href = 'index.html';
+		} else {
+			try {
+				this._worldFile = Playroom.getItem('WorldFile');
+				if (!this._worldFile) {
+					location.href = 'joinGame.html';
+				}
+			} catch (e) {
+				console.log(e);
+				location.href = 'joinGame.html';
+			}
 		}
 	}
 	SUB_saveWorldFile() {
@@ -604,6 +617,6 @@ class MissionMinecraft {
 		}
 	}
 }
-globalThis.InitMapWorld = () => {
-	globalThis._APP = new MissionMinecraft();
+globalThis.InitMapWorld = (mode='local') => {
+	globalThis._APP = new MissionMinecraft(mode);
 }
