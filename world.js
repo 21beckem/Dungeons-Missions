@@ -228,7 +228,9 @@ class MissionMinecraft {
 				this._clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 				this._raycaster.setFromCamera(this._clickMouse, this._camera);
 				let found = this._raycaster.intersectObjects(this._groundTiles1D);
-				this.SUB_bucketFillAtThisIntersect(found[0]);
+				if (found.length > 0) {
+					this.SUB_bucketFillAtThisIntersect(found[0]);
+				}
 			}
 			this._drawing = false;
 			this.SUB_saveWorldFile();
