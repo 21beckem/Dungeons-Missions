@@ -223,7 +223,7 @@ class MissionMinecraft {
 		this._threejs.domElement.addEventListener('pointerup', event => {
 			//console.log('up');
 			if (this._mouseMode != 'paint') { return; }
-			if (this._paintTool == 'brush') {
+			if (this._paintTool == 'bucket') {
 				this._clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
 				this._clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 				this._raycaster.setFromCamera(this._clickMouse, this._camera);
@@ -237,30 +237,32 @@ class MissionMinecraft {
 	SUB_paintTileAtThisIntersect(intersect) {
 		//console.log(intersect);
 		//console.log(intersect.point);
-		this._worldFile.floor.arr[intersect.object.userData.tilePos.i][intersect.object.userData.tilePos.j][0] = this._selectedPaint;
-		intersect.object.material = this._paints[this._selectedPaint];
+		let thisPaint = (this._paintTool == 'eraser') ? this._worldFile.floor.defaultTexture : this._selectedPaint;
+		this._worldFile.floor.arr[intersect.object.userData.tilePos.i][intersect.object.userData.tilePos.j][0] = thisPaint;
+		intersect.object.material = this._paints[thisPaint];
 	}
 	SUB_bucketFillAtThisIntersect(intersect) {
-		const bucketFillMatrix = (matrix, row, col) => {
-			if ( !(row >= 0 && row < matrix.length && col >= 0 && col < matrix[row].length) ) {
+		const bucketFillMatrix = (row, col, original) => {
+			if ( !(row >= 0 && row < this._worldFile.floor.arr.length && col >= 0 && col < this._worldFile.floor.arr[row].length) ) {
 				return;
 			}
 			
 			// return if different than original clicked tile in terms of paint or height
-			if (matrix[row][col] == 1) {
+			if (this._worldFile.floor.arr[row][col][0] != original[0] || this._worldFile.floor.arr[row][col][1] != original[1]) {
 				return;
 			}
 			
 			// set to new
-			matrix[row][col] = 1;
+			this._groundTiles1D.filter(x => x.userData.tilePos.i == row && x.userData.tilePos.j == col)[0].material = this._paints[this._selectedPaint];
+			this._worldFile.floor.arr[row][col][0] = this._selectedPaint;
 
-			bucketFillMatrix(matrix, row + 1, col);
-			bucketFillMatrix(matrix, row - 1, col);
-			bucketFillMatrix(matrix, row, col + 1 );
-			bucketFillMatrix(matrix, row, col -1 );
+			bucketFillMatrix(row + 1, col, original);
+			bucketFillMatrix(row - 1, col, original);
+			bucketFillMatrix(row, col + 1, original);
+			bucketFillMatrix(row, col - 1, original);
 		}
 		let pos = intersect.object.userData.tilePos;
-		bucketFillMatrix(this._worldFile.floor.arr, pos.i, pos.j);
+		bucketFillMatrix(pos.i, pos.j, [...this._worldFile.floor.arr[pos.i][pos.j]]);
 	}
 	SUB_getPaints() {
 		const textures = [

@@ -30,7 +30,7 @@
 				<option onclick="console.log('clicked-object');" src="beckBtns/object.png" value="4"></option>
 			</select>
 		</div>
-		<div class="custom-select can-be-active" mode="paint" type="select" onchange="console.log( this.value )">
+		<div class="custom-select can-be-active" mode="paint" type="select" onchange="_APP._paintTool = ['brush','bucket','eraser'][this.value]">
 			<select>
 				<option src="beckBtns/brush.png" value="0"></option>
 				<option src="beckBtns/brush.png" value="0"></option>
