@@ -598,64 +598,78 @@ class MissionMinecraft {
 	}
 
 	SUB_createCustomObject(objJson) {
-		console.log(objJson);
-		const qSiz = 0.66;
+		const qSiz = 1;
 		const av = qSiz / 2;
 		const sideTriangles = [
 			[ // front
 				-1, 1, 1,
 				1, 1, 1,
 				-1, -1, 1,
-				1, -1, 1
+				1, -1, 1,
+				0,0,1 // <- direction
 			],
 			[ // back
 				1, 1, -1,
 				-1, 1, -1,
 				1, -1, -1,
-				-1, -1, -1
+				-1, -1, -1,
+				0,0,-1 // <- direction
 			],
 			[ // left
 				-1, 1, -1,
 				-1, 1, 1,
 				-1, -1, -1,
-				-1, -1, 1
+				-1, -1, 1,
+				-1,0,0 // <- direction
 			],
 			[ // right
 				1, 1, 1,
 				1, 1, -1,
 				1, -1, 1,
-				1, -1, -1
+				1, -1, -1,
+				1,0,0 // <- direction
 			],
 			[ // top
 				1, 1, 1,
 				-1, 1, 1,
 				1, 1, -1,
-				-1, 1, -1
+				-1, 1, -1,
+				0,1,0 // <- direction
 			],
 			[ // bottom
 				1, -1, 1,
 				1, -1, -1,
 				-1, -1, 1,
 				-1, -1, -1,
+				0,-1,0 // <- direction
 			]
 		];
 		// loop through keys in objJson
 		let rawVerts = new Array();
 		let rawIndis = new Array();
+		let rawColrs = new Array();
 		let iC = 0;
 		for (let i = 0; i < Object.keys(objJson).length; i++) {
 			let pos = Object.keys(objJson)[i];
-			let BlockColor = objJson[pos];
+			let tmpClr = objJson[pos];
+			tmpClr = tmpClr.includes('#') ? tmpClr : '#'+tmpClr;
+			let BlockColor = new THREE.Color(tmpClr).toArray();
 			pos = pos.split(',').map(x => parseInt(x));
 
 			//console.log(pos, BlockColor);
 			// loop through each side of cube
 			for (let j = 0; j < sideTriangles.length; j++) {
 				const sideTri = sideTriangles[j];
+
+				let granne = (sideTri[12]+pos[0]) + ',' + (sideTri[13]+pos[1]) + ',' + (sideTri[14]+pos[2]);
+				if (objJson.hasOwnProperty( granne )) {
+					continue;
+				}
 				for (let k = 0; k < 12; k+=3) {
 					rawVerts.push( (sideTri[k+0]*av) + (pos[0]*qSiz) );
 					rawVerts.push( (sideTri[k+1]*av) + (pos[1]*qSiz) + av );
 					rawVerts.push( (sideTri[k+2]*av) + (pos[2]*qSiz) );
+					rawColrs.push(...BlockColor);
 				}
 				rawIndis.push(
 					iC+ 2, iC+ 1, iC+ 0,
@@ -663,22 +677,17 @@ class MissionMinecraft {
 				);
 				iC += 4;
 			}
-			// if that coordinate exists in objJson keys
-			// skip
-			// else
-			// create that face
-			// assign triangle colors
 		}
-		console.log(rawVerts, rawIndis);
 		if (rawVerts.length > 0) {
 			const geometry = new THREE.BufferGeometry();
 			geometry.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array(rawVerts), 3 ) );
+			geometry.setAttribute( 'color', new THREE.BufferAttribute( new Float32Array(rawColrs), 3 ) );
 			geometry.setIndex(rawIndis);
 			geometry.computeFaceNormals();
 			geometry.computeVertexNormals();
 			let entity = new THREE.Mesh(
 				geometry,
-				new THREE.MeshStandardMaterial( { color: 0xff0000 } )
+				new THREE.MeshStandardMaterial( { vertexColors: true } )
 			);
 			entity.castShadow = true;
 			entity.receiveShadow = false;
