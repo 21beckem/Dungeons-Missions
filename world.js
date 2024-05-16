@@ -597,6 +597,61 @@ class MissionMinecraft {
 		this._scene.add(gridHelper);
 	}
 
+	SUB_createCustomObject(objJson) {
+		console.log(objJson);
+		const sideTriangles = {
+			front: [
+				-1, 1, 1,
+				1, 1, 1,
+				-1, -1, 1,
+				1, -1, 1
+			],
+			back: [
+				1, 1, -1,
+				-1, 1, -1,
+				1, -1, -1,
+				-1, -1, -1
+			],
+			left: [
+				-1, 1, -1,
+				-1, 1, 1,
+				-1, -1, -1,
+				-1, -1, 1
+			],
+			right: [
+				1, 1, 1,
+				1, 1, -1,
+				1, -1, 1,
+				1, -1, -1
+			],
+			top: [
+				-1, 1, 1,
+				1, 1, 1,
+				-1, 1, -1,
+				1, 1, -1
+			],
+			bottom: [
+				1, -1, 1,
+				-1, -1, 1,
+				1, -1, -1,
+				-1, -1, -1
+			]
+		}
+		// loop through keys in objJson
+
+			// loop through each side of cube
+
+			// if that coordinate exists in objJson keys
+				// skip
+			// else
+				// create that face
+				// assign triangle colors
+		
+		// somehow create hitbox
+
+		// retrun created obj and hitbox as JSON
+	}
+
 	SUB_createTokens() {
 		this._worldFile.tokens.forEach(token => {
 			let scale = { x: 6, y: 10, z: 6 }
@@ -709,6 +764,11 @@ class MissionMinecraft {
 			this._controls.enabled = true;
 			this._terrainSquare.material.visible = false;
 		}
+	}
+	async importPresetEntity(objFileName) {
+		let res = await fetch('entities/' + objFileName);
+		let jsn = await res.json();
+		this.SUB_createCustomObject(jsn);
 	}
 }
 globalThis.InitMissionMinecraft = (mode='local') => {
