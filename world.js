@@ -599,7 +599,7 @@ class MissionMinecraft {
 
 	SUB_createCustomObject(objJson) {
 		console.log(objJson);
-		const qSiz = 10;
+		const qSiz = 0.66;
 		const av = qSiz / 2;
 		const sideTriangles = [
 			[ // front
@@ -627,21 +627,22 @@ class MissionMinecraft {
 				1, -1, -1
 			],
 			[ // top
-				-1, 1, 1,
 				1, 1, 1,
-				-1, 1, -1,
-				1, 1, -1
+				-1, 1, 1,
+				1, 1, -1,
+				-1, 1, -1
 			],
 			[ // bottom
 				1, -1, 1,
-				-1, -1, 1,
 				1, -1, -1,
-				-1, -1, -1
+				-1, -1, 1,
+				-1, -1, -1,
 			]
 		];
 		// loop through keys in objJson
 		let rawVerts = new Array();
 		let rawIndis = new Array();
+		let iC = 0;
 		for (let i = 0; i < Object.keys(objJson).length; i++) {
 			let pos = Object.keys(objJson)[i];
 			let BlockColor = objJson[pos];
@@ -649,17 +650,15 @@ class MissionMinecraft {
 
 			//console.log(pos, BlockColor);
 			// loop through each side of cube
-			let iC = 0;
 			for (let j = 0; j < sideTriangles.length; j++) {
 				const sideTri = sideTriangles[j];
-				
 				for (let k = 0; k < 12; k+=3) {
 					rawVerts.push( (sideTri[k+0]*av) + (pos[0]*qSiz) );
-					rawVerts.push( (sideTri[k+1]*av) + (pos[1]*qSiz) );
+					rawVerts.push( (sideTri[k+1]*av) + (pos[1]*qSiz) + av );
 					rawVerts.push( (sideTri[k+2]*av) + (pos[2]*qSiz) );
 				}
 				rawIndis.push(
-					iC+ 0, iC+ 1, iC+ 2,
+					iC+ 2, iC+ 1, iC+ 0,
 					iC+ 2, iC+ 3, iC+ 1
 				);
 				iC += 4;
