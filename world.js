@@ -599,55 +599,96 @@ class MissionMinecraft {
 
 	SUB_createCustomObject(objJson) {
 		console.log(objJson);
-		const sideTriangles = {
-			front: [
+		const qSiz = 10;
+		const av = qSiz / 2;
+		const sideTriangles = [
+			[ // front
 				-1, 1, 1,
 				1, 1, 1,
 				-1, -1, 1,
 				1, -1, 1
 			],
-			back: [
+			[ // back
 				1, 1, -1,
 				-1, 1, -1,
 				1, -1, -1,
 				-1, -1, -1
 			],
-			left: [
+			[ // left
 				-1, 1, -1,
 				-1, 1, 1,
 				-1, -1, -1,
 				-1, -1, 1
 			],
-			right: [
+			[ // right
 				1, 1, 1,
 				1, 1, -1,
 				1, -1, 1,
 				1, -1, -1
 			],
-			top: [
+			[ // top
 				-1, 1, 1,
 				1, 1, 1,
 				-1, 1, -1,
 				1, 1, -1
 			],
-			bottom: [
+			[ // bottom
 				1, -1, 1,
 				-1, -1, 1,
 				1, -1, -1,
 				-1, -1, -1
 			]
-		}
+		];
 		// loop through keys in objJson
+		let rawVerts = new Array();
+		let rawIndis = new Array();
+		for (let i = 0; i < Object.keys(objJson).length; i++) {
+			let pos = Object.keys(objJson)[i];
+			let BlockColor = objJson[pos];
+			pos = pos.split(',').map(x => parseInt(x));
 
+			//console.log(pos, BlockColor);
 			// loop through each side of cube
-
+			let iC = 0;
+			for (let j = 0; j < sideTriangles.length; j++) {
+				const sideTri = sideTriangles[j];
+				
+				for (let k = 0; k < 12; k+=3) {
+					rawVerts.push( (sideTri[k+0]*av) + (pos[0]*qSiz) );
+					rawVerts.push( (sideTri[k+1]*av) + (pos[1]*qSiz) );
+					rawVerts.push( (sideTri[k+2]*av) + (pos[2]*qSiz) );
+				}
+				rawIndis.push(
+					iC+ 0, iC+ 1, iC+ 2,
+					iC+ 2, iC+ 3, iC+ 1
+				);
+				iC += 4;
+			}
 			// if that coordinate exists in objJson keys
-				// skip
+			// skip
 			// else
-				// create that face
-				// assign triangle colors
+			// create that face
+			// assign triangle colors
+		}
+		console.log(rawVerts, rawIndis);
+		if (rawVerts.length > 0) {
+			const geometry = new THREE.BufferGeometry();
+			geometry.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array(rawVerts), 3 ) );
+			geometry.setIndex(rawIndis);
+			geometry.computeFaceNormals();
+			geometry.computeVertexNormals();
+			let entity = new THREE.Mesh(
+				geometry,
+				new THREE.MeshStandardMaterial( { color: 0xff0000 } )
+			);
+			entity.castShadow = true;
+			entity.receiveShadow = false;
+			entity.userData.entity = true;
+			this._scene.add(entity);
+		}
 		
-		// somehow create hitbox
+		
+		// somehow create hitbox ?
 
 		// retrun created obj and hitbox as JSON
 	}
