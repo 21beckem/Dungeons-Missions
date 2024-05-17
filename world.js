@@ -49,9 +49,9 @@ class MissionMinecraft {
 		this.SUB_createSkybox();
 
 		this.SUB_createFloor();
-		this.SUB_saveWorldFile();
+		this.SUB_saveWorldFile_floor();
 
-		this.SUB_createTokens();
+		this.SUB_createEntitiesOnLoad();
 
 		this.SUB_RAF();
 	}
@@ -83,11 +83,23 @@ class MissionMinecraft {
 			}
 		}
 	}
-	SUB_saveWorldFile() {
+	SUB_saveWorldFile_floor() {
 		if (JSON.stringify(this._worldFile) == localStorage.getItem('WorldFile-' + this._worldFile.id)) {
 			return;
 		}
 		this._worldFile.lastEdited = new Date();
+		this._worldFile.floor.lastEdited = new Date();
+		localStorage.setItem('WorldFile-' + this._worldFile.id, JSON.stringify(this._worldFile));
+		if (this.runningMulti && this.playMode == 'local') {
+			Playroom.setState('WorldFile', this._worldFile);
+		}
+	}
+	SUB_saveWorldFile_entities() {
+		if (JSON.stringify(this._worldFile) == localStorage.getItem('WorldFile-' + this._worldFile.id)) {
+			return;
+		}
+		this._worldFile.lastEdited = new Date();
+		this._worldFile.entities.lastEdited = new Date();
 		localStorage.setItem('WorldFile-' + this._worldFile.id, JSON.stringify(this._worldFile));
 		if (this.runningMulti && this.playMode == 'local') {
 			Playroom.setState('WorldFile', this._worldFile);
@@ -168,6 +180,7 @@ class MissionMinecraft {
 			this._currentlyDragging = null;
 			this._draggingMouseMovedYet = false;
 			this._controls.enabled = true;
+			this.SUB_saveWorldFile_entities();
 		});
 	}
 	SUB_dragEntityEveryFrame() {
@@ -179,6 +192,7 @@ class MissionMinecraft {
 				this._controls.enabled = false;
 				let target = found[0].point;
 				this._currentlyDragging.userData.entity.setPosition(target.x, target.y, target.z);
+				this._currentlyDragging.userData.entity.tmp.position = [target.x, target.y, target.z];
 			}
 		}
 	}
@@ -223,7 +237,7 @@ class MissionMinecraft {
 				}
 			}
 			this._drawing = false;
-			this.SUB_saveWorldFile();
+			this.SUB_saveWorldFile_floor();
 		});
 	}
 	SUB_paintTileAtThisIntersect(intersect) {
@@ -427,7 +441,7 @@ class MissionMinecraft {
 			const tilePos = this._terrainSquareIncludedTiles[i];
 			this._worldFile.floor.arr[tilePos[0]][tilePos[1]][1] += 1;
 		}
-		this.SUB_saveWorldFile();
+		this.SUB_saveWorldFile_floor();
 		this.TERRAIN_clear();
 		this.SUB_createFloor();
 	}
@@ -437,7 +451,7 @@ class MissionMinecraft {
 			const tilePos = this._terrainSquareIncludedTiles[i];
 			this._worldFile.floor.arr[tilePos[0]][tilePos[1]][1] = Math.max(this._worldFile.floor.arr[tilePos[0]][tilePos[1]][1]-1, 0);
 		}
-		this.SUB_saveWorldFile();
+		this.SUB_saveWorldFile_floor();
 		this.TERRAIN_clear();
 		this.SUB_createFloor();
 	}
@@ -617,8 +631,7 @@ class MissionMinecraft {
 		return geometry;
 	}
 
-	SUB_createCustomObject(objJson) {
-		const qSiz = 3;
+	SUB_createCustomObject(objJson, qSiz) {
 		const av = qSiz / 2;
 		const sideTriangles = [
 			[ // front
@@ -754,6 +767,10 @@ class MissionMinecraft {
 					this.position = [x, y, z];
 					this.mesh.position.set(x, y, z);
 					this.hitbox.position.set(x, y, z);
+				},
+				rotation: 0,
+				setRotation: function(r) {
+					console.log('setting roation: ' + r);
 				}
 			}
 			hitbox.userData.entity = output;
@@ -765,24 +782,13 @@ class MissionMinecraft {
 		return null;
 	}
 
-	SUB_createTokens() {
-		this._worldFile.tokens.forEach(token => {
-			let scale = { x: 6, y: 10, z: 6 }
-
-			let box = new THREE.Mesh(
-				new THREE.BoxGeometry(scale.x, scale.y, scale.z),
-				new THREE.MeshPhongMaterial({
-					color: token.color
-				})
-			);
-			box.position.set(token.position.x, scale.y / 2, token.position.z);
-			box.castShadow = true;
-			box.receiveShadow = true;
-			this._scene.add(box)
-
-			box.userData.draggable = true;
-			box.userData.name = token.name;
-			token.thisSessionUuid = box.uuid;
+	SUB_createEntitiesOnLoad() {
+		this._worldFile.entities.arr.forEach(entity => {
+			let thisObj = this.SUB_createCustomObject(entity.blocks, entity.scale);
+			thisObj.setPosition(...entity.position);
+			thisObj.setRotation(entity.rotation);
+			entity.tmp = thisObj.hitbox.uuid;
+			thisObj['tmp'] = this._worldFile.entities.arr[ this._worldFile.entities.arr.length - 1 ];
 		});
 	}
 
@@ -797,9 +803,14 @@ class MissionMinecraft {
 			let playFile = Playroom.getState('WorldFile');
 			if (playFile) {
 				if (this._worldFile.lastEdited != playFile.lastEdited) {
-					this._worldFile = playFile;
-					this.TERRAIN_clear();
-					this.SUB_createFloor();
+					if (this._worldFile.floor.lastEdited != playFile.floor.lastEdited) {
+						this._worldFile = playFile;
+						this.TERRAIN_clear();
+						this.SUB_createFloor();
+					}
+					if (this._worldFile.entities.lastEdited != playFile.entities.lastEdited) {
+						// update all entities somehow
+					}
 				}
 			}
 			this.SUB_dragEntityEveryFrame();
@@ -878,12 +889,25 @@ class MissionMinecraft {
 			this._terrainSquare.material.visible = false;
 		}
 	}
-	async importPresetEntity(objFileName) {
+	async importPresetEntity(objFileName, type) {
 		let res = await fetch('entities/' + objFileName);
 		let jsn = await res.json();
-		let thisObj = this.SUB_createCustomObject(jsn);
+		const defaultScale = 1;
+		let thisObj = this.SUB_createCustomObject(jsn, defaultScale);
+		// thisObj.setPosition(0, 0, 0); // cast raw from center of screen, if doesn't hit ground, default to 0, 0, 0
 
-		//thisObj.setPosition(0, 5, 0);
+		let newEnt = {
+			type: type,
+			blocks: jsn,
+			scale: defaultScale,
+			position: thisObj.position,
+			rotation: thisObj.rotation,
+
+			tmp: thisObj.hitbox.uuid
+		}
+		this._worldFile.entities.arr.push(newEnt);
+		thisObj['tmp'] = this._worldFile.entities.arr[ this._worldFile.entities.arr.length - 1 ];
+		this.SUB_saveWorldFile_entities();
 	}
 }
 globalThis.InitMissionMinecraft = (mode='local') => {

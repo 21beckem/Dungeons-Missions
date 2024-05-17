@@ -35,12 +35,15 @@ function createNewWorld(name, size, defaultTexture = '000') {
 		"id": newWorldId,
 		"lastEdited": new Date(),
 		"floor": {
+			"lastEdited" : new Date(),
 			"size": size,
 			"arr": null,
 			"defaultTexture": defaultTexture
 		},
-		"blocks": [],
-		"tokens": []
+		"entities": {
+			"lastEdited" : new Date(),
+			"arr" : new Array()
+		}
 	}
 	let thisWorldsList = JSON.parse(localStorage.getItem('worldsList'));
 	thisWorldsList.push(newWorldId);

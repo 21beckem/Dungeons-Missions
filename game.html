@@ -24,10 +24,10 @@
 		<div class="custom-select" type="buttons">
 			<select>
 				<option src="beckBtns/add_entity.png" value="0"></option>
-				<option onclick="console.log('clicked-player');" src="beckBtns/player.png" value="1"></option>
-				<option onclick="console.log('clicked-enemy');" src="beckBtns/enemy.png" value="2"></option>
-				<option onclick="console.log('clicked-npc');" src="beckBtns/npc.png" value="3"></option>
-				<option onclick="console.log('clicked-object');" src="beckBtns/object.png" value="4"></option>
+				<option onclick="_APP.importPresetEntity('player.entity', 3)" src="beckBtns/player.png" value="1"></option>
+				<option onclick="_APP.importPresetEntity('enemy.entity', 2)" src="beckBtns/enemy.png" value="2"></option>
+				<option onclick="_APP.importPresetEntity('npc.entity', 1)" src="beckBtns/npc.png" value="3"></option>
+				<option onclick="_APP.importPresetEntity('well.entity', 0)" src="beckBtns/object.png" value="4"></option>
 			</select>
 		</div>
 		<div class="custom-select can-be-active" mode="paint" type="select" onchange="_APP._paintTool = ['brush','bucket','eraser'][this.value]">
@@ -119,10 +119,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 		_('beginHostingBtn').innerHTML = 'Begin Hosting';
 		_('topRowButtons').style.display = '';
 	}
-	setTimeout(()=>{
-		_APP.importPresetEntity('well.entity');
-		_APP.importPresetEntity('player.entity');
-	}, 100);
 });
 
 	</script>
