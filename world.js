@@ -42,7 +42,7 @@ class MissionMinecraft {
 		this.SUB_loadWorldFile();
 
 		this.SUB_createRaycaster();
-		this.SUB_setupMoveToken();
+		this.SUB_setupDraggingEntities();
 		this.SUB_setupPainting();
 		this.SUB_setupTerraining();
 
@@ -126,11 +126,6 @@ class MissionMinecraft {
 		this._scene.add(light);
 	}
 
-	SUB_intersect(pos) {
-		this._raycaster.setFromCamera(pos, this._camera);
-		return this._raycaster.intersectObjects(this._scene.children);
-	}
-
 	SUB_createRaycaster() {
 		this._raycaster = new THREE.Raycaster();
 		this._pointer = new THREE.Vector2();
@@ -147,9 +142,10 @@ class MissionMinecraft {
 			this.SUB_terrainSquareOnMouseMove();
 		});
 	}
-	SUB_setupMoveToken() {
-		this._dragging;
+	SUB_setupDraggingEntities() {
+		this._currentlyDragging;
 		this._draggingMouseMovedYet = false;
+		this._dragableObjects = new Array();
 
 		this._threejs.domElement.addEventListener('pointerdown', event => {
 			if (this._mouseMode != 'drag') { return; }
@@ -158,37 +154,31 @@ class MissionMinecraft {
 			this._clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
 			this._clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-			const found = this.SUB_intersect(this._clickMouse);
+
+			this._raycaster.setFromCamera(this._clickMouse, this._camera);
+			const found = this._raycaster.intersectObjects(this._dragableObjects);
+			
 			if (found.length > 0) {
-				if (found[0].object.userData.draggable) {
-					this._dragging = found[0].object
-					console.log(`found draggable ${this._dragging.userData.name}`);
-				}
+				this._currentlyDragging = found[0].object;
+				console.log(`found draggable ${this._currentlyDragging.userData.name}`);
 			}
 		});
 		this._threejs.domElement.addEventListener('pointerup', event => {
 			if (this._mouseMode != 'drag') { return; }
-			this._dragging = null;
+			this._currentlyDragging = null;
 			this._draggingMouseMovedYet = false;
 			this._controls.enabled = true;
 		});
 	}
-	SUB_dragObjectEveryFrame() {
+	SUB_dragEntityEveryFrame() {
 		if (this._mouseMode != 'drag') { return; }
-		if (this._draggingMouseMovedYet && this._dragging != null) {
-			const found = this.SUB_intersect(this._moveMouse);
+		if (this._draggingMouseMovedYet && this._currentlyDragging != null) {
+			this._raycaster.setFromCamera(this._moveMouse, this._camera);
+			const found = this._raycaster.intersectObjects(this._groundTiles1D);
 			if (found.length > 0) {
-				for (let i = 0; i < found.length; i++) {
-					if (!found[i].object.userData.ground)
-						continue;
-
-					this._controls.enabled = false;
-					let target = found[i].point;
-					this._dragging.position.x = target.x;
-					this._dragging.position.z = target.z;
-					this._worldFile.tokens.filter(x => x.thisSessionUuid == this._dragging.uuid)[0].position = { 'x': target.x, 'z': target.z };
-					this.SUB_saveWorldFile();
-				}
+				this._controls.enabled = false;
+				let target = found[0].point;
+				this._currentlyDragging.userData.entity.setPosition(target.x, target.y, target.z);
 			}
 		}
 	}
@@ -752,15 +742,23 @@ class MissionMinecraft {
 					visible: false
 				})
 			);
+			hitbox.userData.draggable = true;
 			this._scene.add(hitbox);
 
 			let output = {
 				mesh: entity,
 				hitbox: hitbox,
 				qSiz: qSiz,
-				position: [0, 0, 0]
+				position: [0, 0, 0],
+				setPosition: function(x, y, z) {
+					this.position = [x, y, z];
+					this.mesh.position.set(x, y, z);
+					this.hitbox.position.set(x, y, z);
+				}
 			}
 			hitbox.userData.entity = output;
+			hitbox.userData.name = 'entity hitbox';
+			this._dragableObjects.push(hitbox);
 
 			return output;
 		}
@@ -804,7 +802,7 @@ class MissionMinecraft {
 					this.SUB_createFloor();
 				}
 			}
-			this.SUB_dragObjectEveryFrame();
+			this.SUB_dragEntityEveryFrame();
 			this._threejs.render(this._scene, this._camera);
 			this.SUB_RAF();
 		});
@@ -883,7 +881,9 @@ class MissionMinecraft {
 	async importPresetEntity(objFileName) {
 		let res = await fetch('entities/' + objFileName);
 		let jsn = await res.json();
-		this.SUB_createCustomObject(jsn);
+		let thisObj = this.SUB_createCustomObject(jsn);
+
+		//thisObj.setPosition(0, 5, 0);
 	}
 }
 globalThis.InitMissionMinecraft = (mode='local') => {
