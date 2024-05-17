@@ -596,9 +596,39 @@ class MissionMinecraft {
 		gridHelper.position.set(0, 0.01, 0);
 		this._scene.add(gridHelper);
 	}
+	SUB_createCubeGeo(coordinates) {
+		const geometry = new THREE.BufferGeometry();
+		const vertices = new Float32Array([
+			coordinates[0], coordinates[1], coordinates[2],
+			coordinates[3], coordinates[4], coordinates[5],
+			coordinates[6], coordinates[7], coordinates[8],
+			coordinates[9], coordinates[10], coordinates[11],
+			coordinates[12], coordinates[13], coordinates[14],
+			coordinates[15], coordinates[16], coordinates[17],
+			coordinates[18], coordinates[19], coordinates[20],
+			coordinates[21], coordinates[22], coordinates[23]
+		]);
+		const indices = new Uint16Array([
+			2, 1, 0,  // Face 0
+			3, 2, 0,  // Face 1
+			4, 5, 6,  // Face 2
+			4, 6, 7,  // Face 3
+			0, 1, 5,  // Face 4
+			0, 5, 4,  // Face 5
+			2, 3, 7,  // Face 6
+			2, 7, 6,  // Face 7
+			7, 3, 0,  // Face 8
+			4, 7, 0,  // Face 9
+			1, 2, 6,  // Face 10
+			1, 6, 5   // Face 11
+		]);
+		geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+		geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+		return geometry;
+	}
 
 	SUB_createCustomObject(objJson) {
-		const qSiz = 1;
+		const qSiz = 3;
 		const av = qSiz / 2;
 		const sideTriangles = [
 			[ // front
@@ -648,6 +678,7 @@ class MissionMinecraft {
 		let rawVerts = new Array();
 		let rawIndis = new Array();
 		let rawColrs = new Array();
+		let [maxX, minX, maxY, minY, maxZ, minZ] = [-99,99,-99,99,-99,99];
 		let iC = 0;
 		for (let i = 0; i < Object.keys(objJson).length; i++) {
 			let pos = Object.keys(objJson)[i];
@@ -655,6 +686,12 @@ class MissionMinecraft {
 			tmpClr = tmpClr.includes('#') ? tmpClr : '#'+tmpClr;
 			let BlockColor = new THREE.Color(tmpClr).toArray();
 			pos = pos.split(',').map(x => parseInt(x));
+			if (pos[0] > maxX) { maxX = pos[0]; }
+			if (pos[0] < minX) { minX = pos[0]; }
+			if (pos[1] > maxY) { maxY = pos[1]; }
+			if (pos[1] < minY) { minY = pos[1]; }
+			if (pos[2] > maxZ) { maxZ = pos[2]; }
+			if (pos[2] < minZ) { minZ = pos[2]; }
 
 			//console.log(pos, BlockColor);
 			// loop through each side of cube
@@ -693,12 +730,41 @@ class MissionMinecraft {
 			entity.receiveShadow = false;
 			entity.userData.entity = true;
 			this._scene.add(entity);
-		}
-		
-		
-		// somehow create hitbox ?
 
-		// retrun created obj and hitbox as JSON
+			maxY += 1;
+			maxX += 0.5;
+			maxZ += 0.5;
+			minX -= 0.5;
+			minZ -= 0.5;
+			const coordinates = [
+				minX*qSiz, minY*qSiz, minZ*qSiz,
+				maxX*qSiz, minY*qSiz, minZ*qSiz,
+				maxX*qSiz, maxY*qSiz, minZ*qSiz,
+				minX*qSiz, maxY*qSiz, minZ*qSiz,
+				minX*qSiz, minY*qSiz, maxZ*qSiz,
+				maxX*qSiz, minY*qSiz, maxZ*qSiz,
+				maxX*qSiz, maxY*qSiz, maxZ*qSiz,
+				minX*qSiz, maxY*qSiz, maxZ*qSiz
+			];
+			let hitbox = new THREE.Mesh(
+				this.SUB_createCubeGeo(coordinates),
+				new THREE.MeshBasicMaterial({
+					visible: false
+				})
+			);
+			this._scene.add(hitbox);
+
+			let output = {
+				mesh: entity,
+				hitbox: hitbox,
+				qSiz: qSiz,
+				position: [0, 0, 0]
+			}
+			hitbox.userData.entity = output;
+
+			return output;
+		}
+		return null;
 	}
 
 	SUB_createTokens() {
