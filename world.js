@@ -193,7 +193,7 @@ class MissionMinecraft {
 		if (this._mouseMode != 'drag') { return; }
 		if (this._draggingMouseMovedYet && this._currentlyDragging != null) {
 			this._raycaster.setFromCamera(this._moveMouse, this._camera);
-			const found = this._raycaster.intersectObjects(this._groundTiles1D);
+			const found = this._raycaster.intersectObjects(this._groundANDwallTiles1D);
 			if (found.length > 0) {
 				this._controls.enabled = false;
 				let target = found[0].point;
@@ -219,14 +219,12 @@ class MissionMinecraft {
 
 
 			this._raycaster.setFromCamera(this._clickMouse, this._camera);
-			let found = this._raycaster.intersectObjects(this._groundTiles1D);
+			let found = this._raycaster.intersectObjects(this._groundANDwallTiles1D);
 
 			if (found.length > 0) {
-				if (found[0].object.userData.ground) {
-					if (this._paintTool != 'bucket') {
-						this._drawing = true;
-						this.SUB_paintTileAtThisIntersect(found[0]);
-					}
+				if (this._paintTool != 'bucket') {
+					this._drawing = true;
+					this.SUB_paintTileAtThisIntersect(found[0]);
 				}
 			}
 		});
@@ -250,7 +248,9 @@ class MissionMinecraft {
 		//console.log(intersect);
 		//console.log(intersect.point);
 		let thisPaint = (this._paintTool == 'eraser') ? this._worldFile.floor.defaultTexture : this._selectedPaint;
-		this._worldFile.floor.arr[intersect.object.userData.tilePos.i][intersect.object.userData.tilePos.j][0] = thisPaint;
+		let tileOrWall = intersect.object.userData.wall ? 2 : 0;
+		let tilePos = intersect.object.userData.wall ? intersect.object.userData.motherTile.userData.tilePos : intersect.object.userData.tilePos;
+		this._worldFile.floor.arr[tilePos.i][tilePos.j][tileOrWall] = thisPaint;
 		intersect.object.material = this._paints[thisPaint];
 	}
 	SUB_bucketFillAtThisIntersect(intersect) {
@@ -292,6 +292,9 @@ class MissionMinecraft {
 			const key = text[0].split('_')[0];
 
 			let map = new THREE.TextureLoader().load('textures/' + text[0]);
+			map.wrapS = THREE.RepeatWrapping;
+			map.wrapT = THREE.RepeatWrapping;
+			map.repeat.set( 1, 1 );
 			map.colorSpace = THREE.SRGBColorSpace;
 			let buildingVoxelMat = new THREE.MeshLambertMaterial({
 				map: map,
@@ -310,11 +313,9 @@ class MissionMinecraft {
 		if (this._mouseMode != 'paint') { return; }
 		if (!this._drawing) { return; }
 		this._raycaster.setFromCamera(this._moveMouse, this._camera);
-		let found = this._raycaster.intersectObjects(this._groundTiles1D);
+		let found = this._raycaster.intersectObjects(this._groundANDwallTiles1D);
 		if (found.length > 0) {
-			if (found[0].object.userData.ground) {
-				this.SUB_paintTileAtThisIntersect(found[0]);
-			}
+			this.SUB_paintTileAtThisIntersect(found[0]);
 		}
 	}
 	SUB_calculateRectangleOrLine(coord1, coord2, offset) {
@@ -476,6 +477,7 @@ class MissionMinecraft {
 			delete this._groundTiles1D[i];
 		}
 		this._groundTiles1D = new Array();
+		this._groundANDwallTiles1D = new Array();
 	}
 
 	SUB_createSkybox() {
@@ -497,6 +499,7 @@ class MissionMinecraft {
 		const gridSquareSize = 10;
 		const realWorldSize = size * this._squareSize;
 		this._groundTiles1D = Array();
+		this._groundANDwallTiles1D = Array();
 		if (this._worldFile.floor.arr == null) {
 			this._worldFile.floor.arr = new Array(size).fill(0);
 		}
@@ -505,7 +508,7 @@ class MissionMinecraft {
 			if (this._worldFile.floor.arr[i] == 0) {
 				this._worldFile.floor.arr[i] = new Array(size);
 				for (let l = 0; l < size; l++) {
-					this._worldFile.floor.arr[i][l] = [this._worldFile.floor.defaultTexture, 0, 0];
+					this._worldFile.floor.arr[i][l] = [this._worldFile.floor.defaultTexture, 0, this._worldFile.floor.defaultTexture];
 				}
 			}
 			let littleSquare = new THREE.Mesh(
@@ -522,6 +525,7 @@ class MissionMinecraft {
 			littleSquare.userData.tilePos = { i: i, j: j };
 			this._scene.add(littleSquare);
 			this._groundTiles1D.push(littleSquare);
+			this._groundANDwallTiles1D.push(littleSquare);
 
 			// make walls if has height:
 			if (height > 0) {
@@ -583,12 +587,14 @@ class MissionMinecraft {
     				geometry.computeVertexNormals();
 					let walls = new THREE.Mesh(
 						geometry,
-						this._paints[this._worldFile.floor.arr[i][j][0]]
+						this._paints[this._worldFile.floor.arr[i][j][2]]
 					);
+					walls.userData.motherTile = littleSquare;
 					walls.castShadow = true;
 					walls.receiveShadow = true;
 					walls.userData.wall = true;
 					this._scene.add(walls);
+					this._groundANDwallTiles1D.push(walls);
 					littleSquare.userData.wallMesh = walls;
 				}
 			}

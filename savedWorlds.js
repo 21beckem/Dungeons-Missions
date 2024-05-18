@@ -28,7 +28,7 @@ function loadInWorlds() {
 	}
 }
 
-function createNewWorld(name, size, defaultTexture = '000') {
+function createNewWorld(name, size, defaultTexture = 'grs') {
 	let newWorldId = new Date().valueOf();
 	let newWorld = {
 		"name": name,
