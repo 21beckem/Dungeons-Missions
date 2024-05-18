@@ -493,6 +493,40 @@ class MissionMinecraft {
 		this._scene.background = texture;*/
 		this._scene.background = new THREE.Color( 0xf0f0f0 );
 	}
+	SUB_BoxNoBottomGeometry(width, height, depth) {
+		const geometry = new THREE.BufferGeometry();
+
+		let w = width / 2;
+		let h = height / 2;
+		let d = depth / 2;
+	
+		// Define the vertices of the box without the bottom face
+		const vertices = new Float32Array([
+			// Front face
+			-w, -h, d,  w, -h, d,  w, h, d,
+			-w, -h, d,  w, h, d, -w, h, d,
+			// Back face
+			-w, -h, -d, -w, h, -d,  w, h, -d,
+			-w, -h, -d,  w, h, -d,  w, -h, -d,
+			// Top face
+			-w, h, -d, -w, h, d,  w, h, d,
+			-w, h, -d,  w, h, d,  w, h, -d,
+			// Left face
+			-w, -h, -d, -w, -h, d, -w, h, d,
+			-w, -h, -d, -w, h, d, -w, h, -d,
+			// Right face
+			w, -h, -d,  w, h, -d,  w, h, d,
+			w, -h, -d,  w, h, d,  w, -h, d,
+		]);
+	
+		// Create position attribute
+		geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+	
+		// Compute the normals
+		geometry.computeVertexNormals();
+	
+		return geometry;
+	}
 
 	SUB_createFloor() {
 		const size = this._worldFile.floor.size;
@@ -505,6 +539,7 @@ class MissionMinecraft {
 		}
 
 		let makeLittleGroundPlane = (x, z, i, j) => {
+			const tileThick = 0.5;
 			if (this._worldFile.floor.arr[i] == 0) {
 				this._worldFile.floor.arr[i] = new Array(size);
 				for (let l = 0; l < size; l++) {
@@ -512,13 +547,13 @@ class MissionMinecraft {
 				}
 			}
 			let littleSquare = new THREE.Mesh(
-				new THREE.PlaneGeometry(this._squareSize, this._squareSize, 1, 1),
+				// this.SUB_createCubeGeo(coordinates),
+				this.SUB_BoxNoBottomGeometry(this._squareSize, tileThick, this._squareSize, 1, 1),
 				this._paints[this._worldFile.floor.arr[i][j][0]]
 			);
 			const height = this._worldFile.floor.arr[i][j][1];
-			const wallColor = this._worldFile.floor.arr[i][j][2];
-			littleSquare.position.set(x, height * this._squareSize, z);
-			littleSquare.rotation.x = -Math.PI / 2;
+			littleSquare.position.set(x, (height * this._squareSize) - (tileThick / 2), z);
+			//littleSquare.rotation.x = -Math.PI / 2;
 			littleSquare.castShadow = false;
 			littleSquare.receiveShadow = true;
 			littleSquare.userData.ground = true;
@@ -552,7 +587,7 @@ class MissionMinecraft {
 						numHelperI,
 						numHelperJ
 					]
-				]
+				];
 
 				let sides = [ [1,0, 0,2], [-1,0, 3,1], [0,1, 1,0], [0,-1, 2,3] ];
 				for (let k = 0; k < sides.length; k++) {
@@ -568,8 +603,8 @@ class MissionMinecraft {
 					// if their height is more than or equal to mine: continue
 					if (opponent >= height) { continue; }
 					//console.log(opponent, k);
-					let minRealH = height * this._squareSize;
-					let oppRealH = opponent * this._squareSize;
+					let minRealH = (height * this._squareSize) - tileThick;
+					let oppRealH = (opponent * this._squareSize) - tileThick;
 					
 					// add to points to rawVerts for this wall
 					rawVerts.push( corners[side[2]][0], oppRealH, corners[side[2]][1] );
