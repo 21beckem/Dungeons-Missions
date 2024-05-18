@@ -89,7 +89,9 @@ class MissionMinecraft {
 		}
 		this._worldFile.lastEdited = new Date();
 		this._worldFile.floor.lastEdited = new Date();
-		localStorage.setItem('WorldFile-' + this._worldFile.id, JSON.stringify(this._worldFile));
+		if (this.playMode == 'local') {
+			localStorage.setItem('WorldFile-' + this._worldFile.id, JSON.stringify(this._worldFile));
+		}
 		if (this.runningMulti && this.playMode == 'local') {
 			Playroom.setState('WorldFile', this._worldFile);
 		}
@@ -100,7 +102,9 @@ class MissionMinecraft {
 		}
 		this._worldFile.lastEdited = new Date();
 		this._worldFile.entities.lastEdited = new Date();
-		localStorage.setItem('WorldFile-' + this._worldFile.id, JSON.stringify(this._worldFile));
+		if (this.playMode == 'local') {
+			localStorage.setItem('WorldFile-' + this._worldFile.id, JSON.stringify(this._worldFile));
+		}
 		if (this.runningMulti && this.playMode == 'local') {
 			Playroom.setState('WorldFile', this._worldFile);
 		}
@@ -156,6 +160,7 @@ class MissionMinecraft {
 	}
 	SUB_setupDraggingEntities() {
 		this._currentlyDragging;
+		this._currentlyDraggingSaveJsonLocation;
 		this._draggingMouseMovedYet = false;
 		this._dragableObjects = new Array();
 
@@ -172,6 +177,7 @@ class MissionMinecraft {
 			
 			if (found.length > 0) {
 				this._currentlyDragging = found[0].object;
+				this._currentlyDraggingSaveJsonLocation = this._worldFile.entities.arr.filter(x => x.id == this._currentlyDragging.userData.entity.id)[0];
 				console.log(`found draggable ${this._currentlyDragging.userData.name}`);
 			}
 		});
@@ -192,7 +198,7 @@ class MissionMinecraft {
 				this._controls.enabled = false;
 				let target = found[0].point;
 				this._currentlyDragging.userData.entity.setPosition(target.x, target.y, target.z);
-				this._currentlyDragging.userData.entity.tmp.position = [target.x, target.y, target.z];
+				this._currentlyDraggingSaveJsonLocation.position = [target.x, target.y, target.z];
 			}
 		}
 	}
@@ -631,7 +637,7 @@ class MissionMinecraft {
 		return geometry;
 	}
 
-	SUB_createCustomObject(objJson, qSiz) {
+	SUB_createCustomObject(objJson, qSiz, thisId) {
 		const av = qSiz / 2;
 		const sideTriangles = [
 			[ // front
@@ -759,9 +765,13 @@ class MissionMinecraft {
 			this._scene.add(hitbox);
 
 			let output = {
+				id: thisId,
 				mesh: entity,
 				hitbox: hitbox,
 				qSiz: qSiz,
+				setQSize: function(s) {
+					console.log('setting qSize: ' + s);
+				},
 				position: [0, 0, 0],
 				setPosition: function(x, y, z) {
 					this.position = [x, y, z];
@@ -784,11 +794,10 @@ class MissionMinecraft {
 
 	SUB_createEntitiesOnLoad() {
 		this._worldFile.entities.arr.forEach(entity => {
-			let thisObj = this.SUB_createCustomObject(entity.blocks, entity.scale);
+			let thisObj = this.SUB_createCustomObject(entity.blocks, entity.scale, entity.id);
 			thisObj.setPosition(...entity.position);
 			thisObj.setRotation(entity.rotation);
-			entity.tmp = thisObj.hitbox.uuid;
-			thisObj['tmp'] = this._worldFile.entities.arr[ this._worldFile.entities.arr.length - 1 ];
+			thisObj.setQSize(entity.scale);
 		});
 	}
 
@@ -802,14 +811,30 @@ class MissionMinecraft {
 		requestAnimationFrame(() => {
 			let playFile = Playroom.getState('WorldFile');
 			if (playFile) {
-				if (this._worldFile.lastEdited != playFile.lastEdited) {
+				if (this._worldFile.lastEdited != playFile.lastEdited) {	// if floor has been edited
 					if (this._worldFile.floor.lastEdited != playFile.floor.lastEdited) {
-						this._worldFile = playFile;
 						this.TERRAIN_clear();
-						this.SUB_createFloor();
+						var floorEdited = true;
 					}
-					if (this._worldFile.entities.lastEdited != playFile.entities.lastEdited) {
-						// update all entities somehow
+					if (this._worldFile.entities.lastEdited != playFile.entities.lastEdited) {	// if entity has been edited
+						playFile.entities.arr.forEach(entity => {
+							let thisMesh = this._dragableObjects.filter(x => x.userData.entity.id == entity.id);
+							if (thisMesh.length > 0) {
+								thisMesh = thisMesh[0];
+								thisMesh.userData.entity.setPosition(...entity.position);
+								thisMesh.userData.entity.setRotation(entity.rotation);
+								thisMesh.userData.entity.setQSize(entity.scale);
+							} else {
+								let thisObj = this.SUB_createCustomObject(entity.blocks, entity.scale, entity.id);
+								thisObj.setPosition(...entity.position);
+								thisObj.setRotation(entity.rotation);
+								thisObj.setQSize(entity.scale);
+							}
+						});
+					}
+					this._worldFile = playFile;
+					if (floorEdited) {
+						this.SUB_createFloor();
 					}
 				}
 			}
@@ -848,7 +873,7 @@ class MissionMinecraft {
 			skipLobby: true,
 			roomCode: code
 		}, () => {
-			beginHostingBtn.innerHTML = code;
+			beginHostingBtn.innerHTML = code.toUpperCase();
 		});
 		this.runningMulti = true;
 		await sleep(100);
@@ -893,20 +918,19 @@ class MissionMinecraft {
 		let res = await fetch('entities/' + objFileName);
 		let jsn = await res.json();
 		const defaultScale = 1;
-		let thisObj = this.SUB_createCustomObject(jsn, defaultScale);
+		const newId = Date.now().toString(36);
+		let thisObj = this.SUB_createCustomObject(jsn, defaultScale, newId);
 		// thisObj.setPosition(0, 0, 0); // cast raw from center of screen, if doesn't hit ground, default to 0, 0, 0
 
 		let newEnt = {
+			id: newId,
 			type: type,
 			blocks: jsn,
 			scale: defaultScale,
 			position: thisObj.position,
-			rotation: thisObj.rotation,
-
-			tmp: thisObj.hitbox.uuid
+			rotation: thisObj.rotation
 		}
 		this._worldFile.entities.arr.push(newEnt);
-		thisObj['tmp'] = this._worldFile.entities.arr[ this._worldFile.entities.arr.length - 1 ];
 		this.SUB_saveWorldFile_entities();
 	}
 }
