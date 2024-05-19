@@ -495,35 +495,46 @@ class MissionMinecraft {
 	}
 	SUB_BoxNoBottomGeometry(width, height, depth) {
 		const geometry = new THREE.BufferGeometry();
-
 		let w = width / 2;
 		let h = height / 2;
 		let d = depth / 2;
-	
-		// Define the vertices of the box without the bottom face
 		const vertices = new Float32Array([
 			// Front face
-			-w, -h, d,  w, -h, d,  w, h, d,
-			-w, -h, d,  w, h, d, -w, h, d,
+			-w, -h, d,    w, -h, d,   w, h, d,
+			-w, -h, d,    w, h, d,   -w, h, d,
 			// Back face
-			-w, -h, -d, -w, h, -d,  w, h, -d,
-			-w, -h, -d,  w, h, -d,  w, -h, -d,
+			-w, -h, -d,   -w, h, -d,    w, h, -d,
+			-w, -h, -d,    w, h, -d,    w, -h, -d,
 			// Top face
-			-w, h, -d, -w, h, d,  w, h, d,
-			-w, h, -d,  w, h, d,  w, h, -d,
+			-w, h, -d,   -w, h, d,    w, h, d,
+			-w, h, -d,    w, h, d,    w, h, -d,
 			// Left face
-			-w, -h, -d, -w, -h, d, -w, h, d,
-			-w, -h, -d, -w, h, d, -w, h, -d,
+			-w, -h, -d,   -w, -h, d,  -w, h, d,
+			-w, -h, -d,   -w, h, d,   -w, h, -d,
 			// Right face
-			w, -h, -d,  w, h, -d,  w, h, d,
-			w, -h, -d,  w, h, d,  w, -h, d,
+			w, -h, -d,    w, h, -d,   w, h, d,
+			w, -h, -d,    w, h, d,    w, -h, d,
 		]);
-	
-		// Create position attribute
 		geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-	
-		// Compute the normals
 		geometry.computeVertexNormals();
+		const uv = new Float32Array([
+			// Front face
+			0, 0, 1, 0, 1, 1,
+			0, 0, 1, 1, 0, 1,
+			// Back face
+			0, 0, 0, 1, 1, 1,
+			0, 0, 1, 1, 1, 0,
+			// Top face
+			0, 0, 0, 1, 1, 1,
+			0, 0, 1, 1, 1, 0,
+			// Left face
+			0, 0, 1, 0, 1, 1,
+			0, 0, 1, 1, 0, 1,
+			// Right face
+			0, 0, 0, 1, 1, 1,
+			0, 0, 1, 1, 1, 0,
+		]);
+		geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
 	
 		return geometry;
 	}
@@ -566,6 +577,7 @@ class MissionMinecraft {
 			if (height > 0) {
 				// for each of the 4 adjacent tiles
 				let rawVerts = new Array();
+				let rawUv = new Array();
 				
 				// find 4 corners for this tile
 				let numHelperI = (i * this._squareSize) - (realWorldSize / 2);
@@ -588,6 +600,13 @@ class MissionMinecraft {
 						numHelperJ
 					]
 				];
+				const addFace = (x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4) => {
+					rawVerts.push(x1, y1, z1, x2, y2, z2, x4, y4, z4);
+					rawVerts.push(x2, y2, z2, x3, y3, z3, x4, y4, z4);
+					let repeatY = (y1 - y2) / this._squareSize;
+					rawUv.push(0, 0, repeatY, 0, 0, 1);
+					rawUv.push(repeatY, 0, repeatY, 1, 0, 1);
+				};
 
 				let sides = [ [1,0, 0,2], [-1,0, 3,1], [0,1, 1,0], [0,-1, 2,3] ];
 				for (let k = 0; k < sides.length; k++) {
@@ -605,19 +624,17 @@ class MissionMinecraft {
 					//console.log(opponent, k);
 					let minRealH = (height * this._squareSize) - tileThick;
 					let oppRealH = (opponent * this._squareSize) - tileThick;
-					
-					// add to points to rawVerts for this wall
-					rawVerts.push( corners[side[2]][0], oppRealH, corners[side[2]][1] );
-					rawVerts.push( corners[side[3]][0], minRealH, corners[side[3]][1] );
-					rawVerts.push( corners[side[2]][0], minRealH, corners[side[2]][1] );
-
-					rawVerts.push( corners[side[2]][0], oppRealH, corners[side[2]][1] );
-					rawVerts.push( corners[side[3]][0], oppRealH, corners[side[3]][1] );
-					rawVerts.push( corners[side[3]][0], minRealH, corners[side[3]][1] );
+					addFace(
+						corners[side[2]][0], minRealH, corners[side[2]][1],
+						corners[side[2]][0], oppRealH, corners[side[2]][1],
+						corners[side[3]][0], oppRealH, corners[side[3]][1],
+						corners[side[3]][0], minRealH, corners[side[3]][1]
+					);
 				}
 				if (rawVerts.length > 0) {
 					const geometry = new THREE.BufferGeometry();
 					geometry.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array(rawVerts), 3 ) );
+					geometry.setAttribute('uv', new THREE.Float32BufferAttribute(rawUv, 2));
 					geometry.computeFaceNormals();
     				geometry.computeVertexNormals();
 					let walls = new THREE.Mesh(
