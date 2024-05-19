@@ -517,22 +517,24 @@ class MissionMinecraft {
 		]);
 		geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
 		geometry.computeVertexNormals();
+		const repeatX = 1; // Number of times to repeat horizontally
+		const repeatY = 10; // Number of times to repeat vertically
 		const uv = new Float32Array([
 			// Front face
-			0, 0, 1, 0, 1, 1,
-			0, 0, 1, 1, 0, 1,
+			0, 0, 0, 0, 0, repeatY,
+			0, 0, 0, repeatY, 0, repeatY,
 			// Back face
-			0, 0, 0, 1, 1, 1,
-			0, 0, 1, 1, 1, 0,
+			0, 0, repeatX, 0, repeatX, repeatY,
+			0, 0, repeatX, repeatY, 0, repeatY,
 			// Top face
-			0, 0, 0, 1, 1, 1,
-			0, 0, 1, 1, 1, 0,
-			// Left face
 			0, 0, 1, 0, 1, 1,
 			0, 0, 1, 1, 0, 1,
+			// Left face
+			0, 0, repeatX, 0, repeatX, repeatY,
+			0, 0, repeatX, repeatY, 0, repeatY,
 			// Right face
-			0, 0, 0, 1, 1, 1,
-			0, 0, 1, 1, 1, 0,
+			0, 0, 0, 0, 0, repeatY,
+			0, 0, 0, repeatY, 0, repeatY,
 		]);
 		geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
 	
