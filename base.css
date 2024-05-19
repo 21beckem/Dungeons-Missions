@@ -19,6 +19,76 @@ canvas {
 	touch-action: none;
 }
 
+#inspector {
+	width: 100%;
+	position: fixed;
+	top: -20px;
+	left: 0;
+	z-index: 10;
+    filter: drop-shadow(2px 2px 6px #0000004f);
+	overflow: hidden;
+}
+#inspector #entityTrashButton {
+	background: none;
+	border: none;
+	color: rgb(218, 54, 54);
+	position: absolute;
+	right: 10px;
+	top: 30px;
+	width: 30px;
+	height: 30px;
+	background-size: cover;
+	image-rendering: pixelated;
+	cursor: pointer;
+	background-image: url('beckBtns/hammer.png');
+}
+#inspector .body {
+	width: calc(100% - 20px);
+	background-color: white;
+	padding: 15px 10px 20px 10px;
+}
+#inspector .body #buttonRow {
+	width: 100%;
+}
+#inspector .body #buttonRow button {
+	background-color: rgb(223, 223, 223);
+	border: none;
+	padding: 5px;
+	margin: 0px 7px;
+	padding: 5px 7px;
+	font-family: minecraft;
+	font-size: 15px;
+}
+.entity-size-slider {
+	-webkit-appearance: none;
+	width: 100%;
+	height: 2px;
+	border-radius: 5px;
+	background: black;
+	outline: none;
+	opacity: 1;
+	-webkit-transition: .2s;
+	transition: opacity .2s;
+}
+
+.entity-size-slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 25px;
+	height: 25px;
+	border-radius: 50%;
+	background: #04AA6D;
+	cursor: pointer;
+}
+
+.entity-size-slider::-moz-range-thumb {
+	width: 15px;
+	height: 15px;
+	border-radius: 0;
+	background: black;
+	cursor: pointer;
+}
+
 #topRowButtons {
 	top: 10px;
 	position: fixed;
@@ -165,3 +235,19 @@ canvas {
 		0px 8px
 	);
 }
+.pixel-corners-4-2 {
+	clip-path: polygon(
+	  0px calc(100% - 4px),
+	  4px calc(100% - 4px),
+	  4px 100%,
+	  calc(100% - 4px) 100%,
+	  calc(100% - 4px) calc(100% - 4px),
+	  100% calc(100% - 4px),
+	  100% 4px,
+	  calc(100% - 4px) 4px,
+	  calc(100% - 4px) 0px,
+	  4px 0px,
+	  4px 4px,
+	  0px 4px
+	);
+  }

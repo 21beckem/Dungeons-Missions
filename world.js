@@ -985,6 +985,8 @@ class MissionMinecraft {
 
 		let newEnt = {
 			id: newId,
+			name: objFileName.replace('.entity', ''),
+			notes: '',
 			type: type,
 			blocks: jsn,
 			scale: defaultScale,

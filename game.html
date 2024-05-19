@@ -15,6 +15,28 @@
 	<script src="https://cdn.joinplayroom.com/react@18.2.0/umd/react.development.js"></script>
 	<script src="https://cdn.joinplayroom.com/react-dom@18.2.0/umd/react-dom.development.js"></script>
 	<script src="https://cdn.joinplayroom.com/playroomkit/multiplayer.umd.js"></script>
+	<div id="inspector">
+		<div class="body pixel-corners-4-6">
+			<center><h4>Entity Details</h4></center>
+			<button id="entityTrashButton"></button>
+			<label for="entityNameInput">Name:</label>
+			<input type="text" id="entityNameInput">
+			<br><br>
+			<label for="entitySizeRange">Size: 1</label>
+			<br>
+			<input type="range" id="entitySizeRange" class="entity-size-slider">
+			<br><br>
+			<div style="width: 100%;" id="buttonRow">
+				<button class="pixel-corners-4-2" style="float: left; padding: 5px 20px">Edit</button>
+				<button class="pixel-corners-4-2" style="float: right;">+45°</button>
+				<button class="pixel-corners-4-2" style="float: right;">-45°</button>
+			</div>
+			<br><br>
+			<label for="entityNotesInput">Notes:</label>
+			<input type="text" id="entityNotesInput">
+			<div style="position: absolute; right: 10px; bottom: 5px; padding: 5px; cursor: pointer;" onclick="this.parentElement.style.display='none'">X</div>
+		</div>
+	</div>
 	<div id="topRowButtons" style="display: none;">
 		<div class="custom-select can-be-active" mode="terrain" type="buttons">
 			<select>
