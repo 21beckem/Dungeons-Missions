@@ -641,8 +641,9 @@ class MissionMinecraft {
     				geometry.computeVertexNormals();
 					let walls = new THREE.Mesh(
 						geometry,
-						this._paints[this._worldFile.floor.arr[i][j][2]]
+						this._paints[this._worldFile.floor.arr[i][j][2]].clone()
 					);
+					walls.material.side = THREE.DoubleSide;
 					walls.userData.motherTile = littleSquare;
 					walls.castShadow = true;
 					walls.receiveShadow = true;
