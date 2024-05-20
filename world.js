@@ -147,26 +147,44 @@ class MissionMinecraft {
 		this._pointer = new THREE.Vector2();
 		this._clickMouse = new THREE.Vector2();
 		this._moveMouse = new THREE.Vector2();
+		this._moveMouseDistance = 0;
 
 		this._threejs.domElement.addEventListener('pointermove', event => {
 			//console.log('move');
 			event.preventDefault();
-			this._moveMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-			this._moveMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-			this._draggingMouseMovedYet = true;
+			let newMouseX = (event.clientX / window.innerWidth) * 2 - 1;
+			let newMouseY = -(event.clientY / window.innerHeight) * 2 + 1
+			this._moveMouseDistance += Math.sqrt(Math.pow(this._moveMouse.y - newMouseY, 2) + Math.pow(this._moveMouse.x - newMouseX, 2));
+			this._moveMouse.x = newMouseX;
+			this._moveMouse.y = newMouseY;
+			if (this._moveMouseDistance > 0.1) {
+				this._draggingMouseMovedYet = true;
+			}
 			this.SUB_paintOnMouseMove();
 			this.SUB_terrainSquareOnMouseMove();
+			this.SUB_dragEntityOnMouseMove();
 		});
 	}
 	SUB_setupDraggingEntities() {
-		this._currentlyDragging;
-		this._currentlyDraggingSaveJsonLocation;
+		this._currentlyDragging = null;
+		this._currentlySelected = null;
+		this._pre_current_select = null;
+		this._pre_deselect = false;
+		this._currentlySelectedEntityJsonLoc;
 		this._draggingMouseMovedYet = false;
 		this._dragableObjects = new Array();
+
+		this._outlineMesh;
+		this._outlineMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            side: THREE.BackSide
+        });
+		this._outlineObject = null;
 
 		this._threejs.domElement.addEventListener('pointerdown', event => {
 			if (this._mouseMode != 'drag') { return; }
 			this._draggingMouseMovedYet = false;
+			this._moveMouseDistance = 0;
 
 			this._clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
 			this._clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -176,20 +194,51 @@ class MissionMinecraft {
 			const found = this._raycaster.intersectObjects(this._dragableObjects);
 			
 			if (found.length > 0) {
-				this._currentlyDragging = found[0].object;
-				this._currentlyDraggingSaveJsonLocation = this._worldFile.entities.arr.filter(x => x.id == this._currentlyDragging.userData.entity.id)[0];
-				console.log(`found draggable ${this._currentlyDragging.userData.name}`);
+				if (this._currentlySelected == found[0].object) { // already selected. now drag.
+					this._currentlyDragging = this._currentlySelected;
+					this._controls.enabled = false;
+				} else {
+					this._pre_current_select = found[0].object;
+				}
+			} else {
+				this._pre_deselect = true;
 			}
 		});
 		this._threejs.domElement.addEventListener('pointerup', event => {
 			if (this._mouseMode != 'drag') { return; }
+
+			if (this._pre_current_select || this._currentlySelected) { // if I pre-selected something on mouse down
+				this._clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+				this._clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+				this._raycaster.setFromCamera(this._clickMouse, this._camera);
+				const found = this._raycaster.intersectObjects(this._dragableObjects);
+				if (found.length > 0) {
+					if (this._pre_current_select == found[0].object) {
+						this._currentlySelected = this._pre_current_select;
+						this._currentlySelectedEntityJsonLoc = this._worldFile.entities.arr.filter(x => x.id == this._pre_current_select.userData.entity.id)[0];
+						this.SUB_onEntitySelect();
+						this._pre_current_select = null;
+					} else {
+						this._pre_current_select = null;
+					}
+				} else {
+					if (this._pre_deselect) {
+						this._pre_deselect = false;
+						if (!this._draggingMouseMovedYet) {
+							this._currentlySelected = null;
+							this.SUB_onEntityUnselect();
+						}
+					}
+					this._pre_current_select = null;
+				}
+			}
 			this._currentlyDragging = null;
 			this._draggingMouseMovedYet = false;
 			this._controls.enabled = true;
 			this.SUB_saveWorldFile_entities();
 		});
 	}
-	SUB_dragEntityEveryFrame() {
+	SUB_dragEntityOnMouseMove() {
 		if (this._mouseMode != 'drag') { return; }
 		if (this._draggingMouseMovedYet && this._currentlyDragging != null) {
 			this._raycaster.setFromCamera(this._moveMouse, this._camera);
@@ -198,9 +247,32 @@ class MissionMinecraft {
 				this._controls.enabled = false;
 				let target = found[0].point;
 				this._currentlyDragging.userData.entity.setPosition(target.x, target.y, target.z);
-				this._currentlyDraggingSaveJsonLocation.position = [target.x, target.y, target.z];
+				this._currentlySelectedEntityJsonLoc.position = [target.x, target.y, target.z];
 			}
 		}
+	}
+	SUB_outlineObject(object) {
+		if (this._outlineObject) {
+			this._scene.remove(this._outlineMesh);
+			this._outlineObject = null;
+		}
+		if (!object) { return; }
+		this._outlineObject = object;
+		const outlineGeometry = new THREE.BufferGeometry().copy(this._outlineObject.userData.entity.mesh.geometry);
+		this._outlineMesh = new THREE.Mesh(outlineGeometry, this._outlineMaterial);
+		this._outlineMesh.scale.multiplyScalar(1.1);
+		this._outlineMesh.position.y -= 0.05;
+		this._outlineMesh.position.copy(this._outlineObject.position);
+		this._outlineMesh.rotation.copy(this._outlineObject.rotation);
+		this._scene.add(this._outlineMesh);
+	}
+	SUB_onEntitySelect() {
+		this.SUB_outlineObject(this._currentlySelected);
+		console.log('selected: ' + this._currentlySelectedEntityJsonLoc.name);
+	}
+	SUB_onEntityUnselect() {
+		this.SUB_outlineObject(null);
+		console.log('unselected');
 	}
 
 	SUB_setupPainting() {
@@ -213,6 +285,7 @@ class MissionMinecraft {
 			//console.log('down');
 			if (this._mouseMode != 'paint') { return; }
 			this._draggingMouseMovedYet = false;
+			this._moveMouseDistance = 0;
 
 			this._clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
 			this._clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -392,6 +465,7 @@ class MissionMinecraft {
 			//console.log('down');
 			if (this._mouseMode != 'terrain') { return; }
 			this._draggingMouseMovedYet = false;
+			this._moveMouseDistance = 0;
 
 			this._clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
 			this._clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -635,7 +709,7 @@ class MissionMinecraft {
 				}
 				if (rawVerts.length > 0) {
 					const geometry = new THREE.BufferGeometry();
-					geometry.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array(rawVerts), 3 ) );
+					geometry.setAttribute('position', new THREE.BufferAttribute( new Float32Array(rawVerts), 3 ));
 					geometry.setAttribute('uv', new THREE.Float32BufferAttribute(rawUv, 2));
 					geometry.computeFaceNormals();
     				geometry.computeVertexNormals();
@@ -745,6 +819,7 @@ class MissionMinecraft {
 			]
 		];
 		// loop through keys in objJson
+		let rawUtlin = new Array();
 		let rawVerts = new Array();
 		let rawIndis = new Array();
 		let rawColrs = new Array();
@@ -899,7 +974,6 @@ class MissionMinecraft {
 					}
 				}
 			}
-			this.SUB_dragEntityEveryFrame();
 			this._threejs.render(this._scene, this._camera);
 			this.SUB_RAF();
 		});
@@ -967,7 +1041,7 @@ class MissionMinecraft {
 		if (mode == 'terrain') {
 			this._controls.enabled = false;
 			this._terrainSquare.material.visible = true;
-		} else if (mode == 'paint' || mode == 'drag') {
+		} else if (mode == 'paint') {
 			this._controls.enabled = false;
 			this._terrainSquare.material.visible = false;
 		} else {
