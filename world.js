@@ -174,13 +174,6 @@ class MissionMinecraft {
 		this._draggingMouseMovedYet = false;
 		this._dragableObjects = new Array();
 
-		this._outlineMesh;
-		this._outlineMaterial = new THREE.MeshBasicMaterial({
-            color: 0xffffff,
-            side: THREE.BackSide
-        });
-		this._outlineObject = null;
-
 		this._threejs.domElement.addEventListener('pointerdown', event => {
 			if (this._mouseMode != 'drag') { return; }
 			this._draggingMouseMovedYet = false;
@@ -214,9 +207,7 @@ class MissionMinecraft {
 				const found = this._raycaster.intersectObjects(this._dragableObjects);
 				if (found.length > 0) {
 					if (this._pre_current_select == found[0].object) {
-						this._currentlySelected = this._pre_current_select;
-						this._currentlySelectedEntityJsonLoc = this._worldFile.entities.arr.filter(x => x.id == this._pre_current_select.userData.entity.id)[0];
-						this.SUB_onEntitySelect();
+						this.SUB_SelectEntity(this._pre_current_select);
 						this._pre_current_select = null;
 					} else {
 						this._pre_current_select = null;
@@ -225,8 +216,7 @@ class MissionMinecraft {
 					if (this._pre_deselect) {
 						this._pre_deselect = false;
 						if (!this._draggingMouseMovedYet) {
-							this._currentlySelected = null;
-							this.SUB_onEntityUnselect();
+							this.SUB_UnselectEntity();
 						}
 					}
 					this._pre_current_select = null;
@@ -251,27 +241,20 @@ class MissionMinecraft {
 			}
 		}
 	}
-	SUB_outlineObject(object) {
-		if (this._outlineObject) {
-			this._scene.remove(this._outlineMesh);
-			this._outlineObject = null;
+	SUB_SelectEntity(newSelected) {
+		if (this._currentlySelected) {
+			this._currentlySelected.userData.entity.setOutline(false);
 		}
-		if (!object) { return; }
-		this._outlineObject = object;
-		const outlineGeometry = new THREE.BufferGeometry().copy(this._outlineObject.userData.entity.mesh.geometry);
-		this._outlineMesh = new THREE.Mesh(outlineGeometry, this._outlineMaterial);
-		this._outlineMesh.scale.multiplyScalar(1.1);
-		this._outlineMesh.position.y -= 0.05;
-		this._outlineMesh.position.copy(this._outlineObject.position);
-		this._outlineMesh.rotation.copy(this._outlineObject.rotation);
-		this._scene.add(this._outlineMesh);
+		this._currentlySelected = newSelected;
+		this._currentlySelected.userData.entity.setOutline(true);
+		this._currentlySelectedEntityJsonLoc = this._worldFile.entities.arr.filter(x => x.id == newSelected.userData.entity.id)[0];
+		console.log('selected:', this._currentlySelectedEntityJsonLoc.name);
 	}
-	SUB_onEntitySelect() {
-		this.SUB_outlineObject(this._currentlySelected);
-		console.log('selected: ' + this._currentlySelectedEntityJsonLoc.name);
-	}
-	SUB_onEntityUnselect() {
-		this.SUB_outlineObject(null);
+	SUB_UnselectEntity() {
+		if (this._currentlySelected) {
+			this._currentlySelected.userData.entity.setOutline(false);
+		}
+		this._currentlySelected = null;
 		console.log('unselected');
 	}
 
@@ -825,6 +808,10 @@ class MissionMinecraft {
 		let rawColrs = new Array();
 		let [maxX, minX, maxY, minY, maxZ, minZ] = [-99,99,-99,99,-99,99];
 		let iC = 0;
+		const pushOffsetVrt = (triVal, av, Pos) => {
+			let off = triVal > 0 ? 0.15 : -0.15;
+			rawUtlin.push( (triVal*av) + Pos + off );
+		}
 		for (let i = 0; i < Object.keys(objJson).length; i++) {
 			let pos = Object.keys(objJson)[i];
 			let tmpClr = objJson[pos];
@@ -851,7 +838,12 @@ class MissionMinecraft {
 					rawVerts.push( (sideTri[k+0]*av) + (pos[0]*qSiz) );
 					rawVerts.push( (sideTri[k+1]*av) + (pos[1]*qSiz) + av );
 					rawVerts.push( (sideTri[k+2]*av) + (pos[2]*qSiz) );
+
 					rawColrs.push(...BlockColor);
+
+					pushOffsetVrt(sideTri[k+0], av, (pos[0]*qSiz) );
+					pushOffsetVrt(sideTri[k+1], av, (pos[1]*qSiz) + av );
+					pushOffsetVrt(sideTri[k+2], av, (pos[2]*qSiz) );
 				}
 				rawIndis.push(
 					iC+ 2, iC+ 1, iC+ 0,
@@ -900,10 +892,26 @@ class MissionMinecraft {
 			hitbox.userData.draggable = true;
 			this._scene.add(hitbox);
 
+			// outline
+			const outlineGeo = new THREE.BufferGeometry();
+			outlineGeo.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array(rawUtlin), 3 ) );
+			outlineGeo.setIndex(rawIndis);
+			outlineGeo.computeFaceNormals();
+			let utLin = new THREE.Mesh(
+				outlineGeo,
+				new THREE.MeshBasicMaterial({
+					color: 0xffffff,
+					side: THREE.BackSide,
+					visible: false
+				})
+			)
+			this._scene.add(utLin);
+
 			let output = {
 				id: thisId,
 				mesh: entity,
 				hitbox: hitbox,
+				outline: utLin,
 				qSiz: qSiz,
 				setQSize: function(s) {
 					console.log('setting qSize: ' + s);
@@ -913,6 +921,10 @@ class MissionMinecraft {
 					this.position = [x, y, z];
 					this.mesh.position.set(x, y, z);
 					this.hitbox.position.set(x, y, z);
+					this.outline.position.set(x, y, z);
+				},
+				setOutline: function(yesNo) {
+					this.outline.material.visible = yesNo;
 				},
 				rotation: 0,
 				setRotation: function(r) {
@@ -1037,6 +1049,7 @@ class MissionMinecraft {
 		this._scene.add(box);
 	}
 	setMouseMode(mode) {
+		this.SUB_UnselectEntity();
 		this._mouseMode = mode;
 		if (mode == 'terrain') {
 			this._controls.enabled = false;
