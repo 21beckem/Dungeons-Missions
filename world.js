@@ -101,7 +101,6 @@ class MissionMinecraft {
 		if (JSON.stringify(this._worldFile) == localStorage.getItem('WorldFile-' + this._worldFile.id)) {
 			return;
 		}
-		console.log('saving entities');
 		this._worldFile.lastEdited = new Date();
 		this._worldFile.entities.lastEdited = new Date();
 		if (this.playMode == 'local') {
