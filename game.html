@@ -22,19 +22,19 @@
 			<label for="entityNameInput">Name:</label>
 			<input type="text" id="entityNameInput">
 			<br><br>
-			<label for="entitySizeRange">Size: 1</label>
+			<label id="entitySizeRangeLabel" for="entitySizeRange">Size: </label><input type="number" id="entitySizeRangeValue">
 			<br>
-			<input type="range" id="entitySizeRange" class="entity-size-slider">
+			<input type="range" id="entitySizeRange" class="entity-size-slider" min="15" max="100">
 			<br><br>
 			<div style="width: 100%;" id="buttonRow">
 				<button class="pixel-corners-4-2" style="float: left; padding: 5px 20px">Edit</button>
-				<button class="pixel-corners-4-2" style="float: right;">+45°</button>
-				<button class="pixel-corners-4-2" style="float: right;">-45°</button>
+				<button class="pixel-corners-4-2" style="float: right;" id="inspectAdd45Btn">+45°</button>
+				<button class="pixel-corners-4-2" style="float: right;" id="inspectSub45Btn">-45°</button>
 			</div>
 			<br><br>
 			<label for="entityNotesInput">Notes:</label>
 			<input type="text" id="entityNotesInput">
-			<div style="position: absolute; right: 10px; bottom: 5px; padding: 5px; cursor: pointer;" onclick="this.parentElement.style.display='none'">X</div>
+			<div style="position: absolute; right: 10px; bottom: 5px; padding: 5px; cursor: pointer;" onclick="_APP.SUB_UnselectEntity();">X</div>
 		</div>
 	</div>
 	<div id="topRowButtons" style="display: none;">
@@ -82,7 +82,7 @@
 	</div>
 
 	<div id="bottomRowButtons">
-		<div class="custom-select can-be-active" mode="drag" type="buttons">
+		<div class="custom-select can-be-active" mode="interact" type="buttons">
 			<select>
 				<option onclick="console.log('pointer mode');" src="beckBtns/pointer.png" value="0"></option>
 			</select>

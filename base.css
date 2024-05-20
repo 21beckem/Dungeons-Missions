@@ -27,6 +27,8 @@ canvas {
 	z-index: 10;
     filter: drop-shadow(2px 2px 6px #0000004f);
 	overflow: hidden;
+	transform: translateY(-260px);
+	transition: transform 0.25s ease;
 }
 #inspector #entityTrashButton {
 	background: none;
@@ -43,7 +45,6 @@ canvas {
 	background-image: url('beckBtns/hammer.png');
 }
 #inspector .body {
-	width: calc(100% - 20px);
 	background-color: white;
 	padding: 15px 10px 20px 10px;
 }

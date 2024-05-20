@@ -1,6 +1,7 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/controls/OrbitControls.js';
 
+function _(x) {return document.getElementById(x);}
 
 class MissionMinecraft {
 	constructor(mode) {
@@ -100,6 +101,7 @@ class MissionMinecraft {
 		if (JSON.stringify(this._worldFile) == localStorage.getItem('WorldFile-' + this._worldFile.id)) {
 			return;
 		}
+		console.log('saving entities');
 		this._worldFile.lastEdited = new Date();
 		this._worldFile.entities.lastEdited = new Date();
 		if (this.playMode == 'local') {
@@ -175,7 +177,7 @@ class MissionMinecraft {
 		this._dragableObjects = new Array();
 
 		this._threejs.domElement.addEventListener('pointerdown', event => {
-			if (this._mouseMode != 'drag') { return; }
+			if (this._mouseMode != 'interact') { return; }
 			this._draggingMouseMovedYet = false;
 			this._moveMouseDistance = 0;
 
@@ -198,7 +200,7 @@ class MissionMinecraft {
 			}
 		});
 		this._threejs.domElement.addEventListener('pointerup', event => {
-			if (this._mouseMode != 'drag') { return; }
+			if (this._mouseMode != 'interact') { return; }
 
 			if (this._pre_current_select || this._currentlySelected) { // if I pre-selected something on mouse down
 				this._clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -229,7 +231,7 @@ class MissionMinecraft {
 		});
 	}
 	SUB_dragEntityOnMouseMove() {
-		if (this._mouseMode != 'drag') { return; }
+		if (this._mouseMode != 'interact') { return; }
 		if (this._draggingMouseMovedYet && this._currentlyDragging != null) {
 			this._raycaster.setFromCamera(this._moveMouse, this._camera);
 			const found = this._raycaster.intersectObjects(this._groundANDwallTiles1D);
@@ -248,14 +250,55 @@ class MissionMinecraft {
 		this._currentlySelected = newSelected;
 		this._currentlySelected.userData.entity.setOutline(true);
 		this._currentlySelectedEntityJsonLoc = this._worldFile.entities.arr.filter(x => x.id == newSelected.userData.entity.id)[0];
-		console.log('selected:', this._currentlySelectedEntityJsonLoc.name);
+
+		_('inspector').style.transform = 'TranslateY(0px)';
+		// fill in inspector
+		_('entityNameInput').value = this._currentlySelectedEntityJsonLoc.name;
+		_('entityNameInput').oninput = () => {
+			this._currentlySelectedEntityJsonLoc.name = _('entityNameInput').value;
+		}
+		_('entitySizeRangeValue').value = this._currentlySelectedEntityJsonLoc.scale * 25;
+		_('entitySizeRangeValue').oninput = () => {
+			this._currentlySelectedEntityJsonLoc.scale = parseFloat((_('entitySizeRangeValue').value) / 25) || 1;
+			_('entitySizeRange').value = _('entitySizeRangeValue').value;
+			this._currentlySelected.userData.entity.setScale(this._currentlySelectedEntityJsonLoc.scale);
+		}
+		_('entitySizeRange').value = this._currentlySelectedEntityJsonLoc.scale * 25;
+		_('entitySizeRange').oninput = () => {
+			this._currentlySelectedEntityJsonLoc.scale = parseFloat((_('entitySizeRange').value) / 25) || 1;
+			_('entitySizeRangeValue').value = _('entitySizeRange').value;
+			this._currentlySelected.userData.entity.setScale(this._currentlySelectedEntityJsonLoc.scale);
+		}
+		_('entityNotesInput').value = this._currentlySelectedEntityJsonLoc.notes;
+		_('entityNotesInput').oninput = () => {
+			this._currentlySelectedEntityJsonLoc.notes = _('entityNotesInput').value;
+		}
+
+		_('inspectAdd45Btn').onclick = () => {
+			this._currentlySelectedEntityJsonLoc.rotation += 45;
+			this._currentlySelected.userData.entity.setRotation(this._currentlySelectedEntityJsonLoc.rotation);
+		}
+		_('inspectSub45Btn').onclick = () => {
+			this._currentlySelectedEntityJsonLoc.rotation -= 45;
+			this._currentlySelected.userData.entity.setRotation(this._currentlySelectedEntityJsonLoc.rotation);
+		}
+		_('entityTrashButton').onclick = () => {
+			JSAlert.confirm('Are you sure you want to delete ' + this._currentlySelectedEntityJsonLoc.name + '?', '<span style="color:red">DANGER</span>', JSAlert.Icons.Warning)
+			.then((result) => {
+				if (result) {
+					this._currentlySelected.userData.entity.delete(this._currentlySelected.userData.entity);
+					this.SUB_UnselectEntity();
+				}
+			});
+		}
 	}
 	SUB_UnselectEntity() {
+		_('inspector').style.transform = 'TranslateY(-' + _('inspector').offsetHeight + 'px)';
+		this.SUB_saveWorldFile_entities();
 		if (this._currentlySelected) {
 			this._currentlySelected.userData.entity.setOutline(false);
 		}
 		this._currentlySelected = null;
-		console.log('unselected');
 	}
 
 	SUB_setupPainting() {
@@ -755,7 +798,8 @@ class MissionMinecraft {
 		return geometry;
 	}
 
-	SUB_createCustomObject(objJson, qSiz, thisId) {
+	SUB_createCustomObject(objJson, thisId) {
+		const qSiz = 1;
 		const av = qSiz / 2;
 		const sideTriangles = [
 			[ // front
@@ -835,15 +879,15 @@ class MissionMinecraft {
 					continue;
 				}
 				for (let k = 0; k < 12; k+=3) {
-					rawVerts.push( (sideTri[k+0]*av) + (pos[0]*qSiz) );
+					rawVerts.push( (sideTri[k+0]*av) + (pos[0]*qSiz) + av );
 					rawVerts.push( (sideTri[k+1]*av) + (pos[1]*qSiz) + av );
-					rawVerts.push( (sideTri[k+2]*av) + (pos[2]*qSiz) );
+					rawVerts.push( (sideTri[k+2]*av) + (pos[2]*qSiz) + av );
 
 					rawColrs.push(...BlockColor);
 
-					pushOffsetVrt(sideTri[k+0], av, (pos[0]*qSiz) );
+					pushOffsetVrt(sideTri[k+0], av, (pos[0]*qSiz) + av );
 					pushOffsetVrt(sideTri[k+1], av, (pos[1]*qSiz) + av );
-					pushOffsetVrt(sideTri[k+2], av, (pos[2]*qSiz) );
+					pushOffsetVrt(sideTri[k+2], av, (pos[2]*qSiz) + av );
 				}
 				rawIndis.push(
 					iC+ 2, iC+ 1, iC+ 0,
@@ -869,10 +913,8 @@ class MissionMinecraft {
 			this._scene.add(entity);
 
 			maxY += 1;
-			maxX += 0.5;
-			maxZ += 0.5;
-			minX -= 0.5;
-			minZ -= 0.5;
+			maxX += 1;
+			maxZ += 1;
 			const coordinates = [
 				minX*qSiz, minY*qSiz, minZ*qSiz,
 				maxX*qSiz, minY*qSiz, minZ*qSiz,
@@ -912,9 +954,12 @@ class MissionMinecraft {
 				mesh: entity,
 				hitbox: hitbox,
 				outline: utLin,
-				qSiz: qSiz,
-				setQSize: function(s) {
-					console.log('setting qSize: ' + s);
+				scale: 1,
+				setScale: function(s) {
+					this.scale = s;
+					this.mesh.scale.set(s, s, s);
+					this.hitbox.scale.set(s, s, s);
+					this.outline.scale.set(s, s, s);
 				},
 				position: [0, 0, 0],
 				setPosition: function(x, y, z) {
@@ -928,7 +973,26 @@ class MissionMinecraft {
 				},
 				rotation: 0,
 				setRotation: function(r) {
-					console.log('setting roation: ' + r);
+					this.rotation = r;
+					let realR = (-r * Math.PI / 180);
+					this.mesh.rotation.y = realR;
+					this.hitbox.rotation.y = realR;
+					this.outline.rotation.y = realR;
+				},
+				delete: (self) => {
+					this._scene.remove(self.mesh);
+					self.mesh.geometry.dispose();
+					self.mesh.material.dispose();
+					
+					this._scene.remove(self.hitbox);
+					self.hitbox.geometry.dispose();
+					self.hitbox.material.dispose();
+
+					this._scene.remove(self.outline);
+					self.outline.geometry.dispose();
+					self.outline.material.dispose();
+
+					this._worldFile.entities.arr = this._worldFile.entities.arr.filter(x => x.id != self.id);
 				}
 			}
 			hitbox.userData.entity = output;
@@ -942,10 +1006,10 @@ class MissionMinecraft {
 
 	SUB_createEntitiesOnLoad() {
 		this._worldFile.entities.arr.forEach(entity => {
-			let thisObj = this.SUB_createCustomObject(entity.blocks, entity.scale, entity.id);
+			let thisObj = this.SUB_createCustomObject(entity.blocks, entity.id);
 			thisObj.setPosition(...entity.position);
 			thisObj.setRotation(entity.rotation);
-			thisObj.setQSize(entity.scale);
+			thisObj.setScale(entity.scale);
 		});
 	}
 
@@ -958,27 +1022,40 @@ class MissionMinecraft {
 	SUB_RAF() {
 		requestAnimationFrame(() => {
 			let playFile = Playroom.getState('WorldFile');
-			if (playFile) {
+			if (playFile && this.playMode == 'Playroom') {
 				if (this._worldFile.lastEdited != playFile.lastEdited) {	// if floor has been edited
 					if (this._worldFile.floor.lastEdited != playFile.floor.lastEdited) {
 						this.TERRAIN_clear();
 						var floorEdited = true;
 					}
 					if (this._worldFile.entities.lastEdited != playFile.entities.lastEdited) {	// if entity has been edited
+						let theseEntities = [...this._worldFile.entities.arr.map(x => x.id)];
 						playFile.entities.arr.forEach(entity => {
 							let thisMesh = this._dragableObjects.filter(x => x.userData.entity.id == entity.id);
 							if (thisMesh.length > 0) {
 								thisMesh = thisMesh[0];
+								var index = theseEntities.indexOf(thisMesh.userData.entity.id);
+								if (index !== -1) {
+									theseEntities.splice(index, 1);
+								}
 								thisMesh.userData.entity.setPosition(...entity.position);
 								thisMesh.userData.entity.setRotation(entity.rotation);
-								thisMesh.userData.entity.setQSize(entity.scale);
+								thisMesh.userData.entity.setScale(entity.scale);
 							} else {
-								let thisObj = this.SUB_createCustomObject(entity.blocks, entity.scale, entity.id);
+								let thisObj = this.SUB_createCustomObject(entity.blocks, entity.id);
 								thisObj.setPosition(...entity.position);
 								thisObj.setRotation(entity.rotation);
-								thisObj.setQSize(entity.scale);
+								thisObj.setScale(entity.scale);
 							}
 						});
+						if (theseEntities.length > 0) {
+							theseEntities.forEach(id => {
+								let thisGuy = this._dragableObjects.filter(x => x.userData.entity.id == id);
+								if (thisGuy.length > 0) {
+									thisGuy[0].userData.entity.delete(thisGuy[0].userData.entity);
+								}
+							});
+						}
 					}
 					this._worldFile = playFile;
 					if (floorEdited) {
@@ -1067,7 +1144,8 @@ class MissionMinecraft {
 		let jsn = await res.json();
 		const defaultScale = 1;
 		const newId = Date.now().toString(36);
-		let thisObj = this.SUB_createCustomObject(jsn, defaultScale, newId);
+		let thisObj = this.SUB_createCustomObject(jsn, defaultScale, null);
+		thisObj.id = newId;
 		// thisObj.setPosition(0, 0, 0); // cast raw from center of screen, if doesn't hit ground, default to 0, 0, 0
 
 		let newEnt = {
@@ -1081,6 +1159,8 @@ class MissionMinecraft {
 			rotation: thisObj.rotation
 		}
 		this._worldFile.entities.arr.push(newEnt);
+		this.setMouseMode('interact');
+		this.SUB_SelectEntity(thisObj.hitbox);
 		this.SUB_saveWorldFile_entities();
 	}
 }
