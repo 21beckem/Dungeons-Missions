@@ -40,7 +40,9 @@
 	<div id="topRowButtons" style="display: none;">
 		<div class="custom-select can-be-active" mode="terrain" type="buttons">
 			<select>
-				<option onclick="console.log('terrain mode');" src="beckBtns/terrain.png" value="0"></option>
+				<option src="beckBtns/terrain.png" value="0"></option>
+				<!-- <option onclick="console.log('terrain square');" src="beckBtns/square-tool.png" value="1"></option>
+				<option onclick="console.log('terrain square');" src="beckBtns/bucket.png" value="2"></option> -->
 			</select>
 		</div>
 		<div class="custom-select" type="buttons">
@@ -52,7 +54,7 @@
 				<option onclick="_APP.importPresetEntity('well.entity', 0)" src="beckBtns/object.png" value="4"></option>
 			</select>
 		</div>
-		<div class="custom-select can-be-active" mode="paint" type="select" onchange="_APP._paintTool = ['brush','bucket','eraser'][this.value]">
+		<div class="custom-select can-be-active" mode="paint" type="select" only-open-with-class="active" onchange="_APP._paintTool = ['brush','bucket','eraser'][this.value]">
 			<select>
 				<option src="beckBtns/brush.png" value="0"></option>
 				<option src="beckBtns/brush.png" value="0"></option>
@@ -83,17 +85,17 @@
 	</div>
 
 	<div id="bottomRowButtons">
-		<div class="custom-select can-be-active" mode="interact" type="buttons">
+		<div class="custom-select" type="buttons">
 			<select>
-				<option onclick="console.log('pointer mode');" src="beckBtns/pointer.png" value="0"></option>
+				<option onclick="saveAndExit()" src="beckBtns/import.png" value="0"></option>
 			</select>
 		</div>
 		<div id="gameHosterDiv" style="display: flex; justify-content: center; align-items: center; filter: drop-shadow(2px 2px 6px #0000004f);">
 			<div id="beginHostingBtn" class="pixel-corners-4-4" onclick="_APP.startHosting(this)"><div class="loader" style="margin-left: calc(50% - 19px);"></div></div>
 		</div>
-		<div class="custom-select can-be-active" mode="pan" type="buttons">
+		<div class="custom-select can-be-active" mode="interact" type="buttons">
 			<select>
-				<option onclick="console.log('pan mode');" src="beckBtns/view_active.png" value="0"></option>
+				<option src="beckBtns/view.png" value="0"></option>
 			</select>
 		</div>
 	</div>
@@ -111,8 +113,10 @@ document.querySelectorAll('DIV.custom-select.can-be-active').forEach(select => {
 		// change img icon
 		document.querySelectorAll('DIV.custom-select.can-be-active .select-selected').forEach(x => {
 			x.firstElementChild.src = x.firstElementChild.src.replace('_active','');
+			x.parentElement.classList.remove('active');
 		});
 		btn.firstElementChild.src = btn.firstElementChild.src.replace('.png','_active.png');
+		btn.parentElement.classList.add('active');
 
 		// show other buttons/panels if needed
 		const mode = select.getAttribute('mode');
@@ -143,7 +147,13 @@ window.addEventListener('DOMContentLoaded', async () => {
 		_('topRowButtons').style.display = '';
 	}
 });
-
+function saveAndExit() {
+	_APP.SUB_saveWorldFile_floor();
+	_APP.SUB_saveWorldFile_entities();
+	setTimeout(() => {
+		location.href = 'index.html';
+	}, 100);
+}
 	</script>
 </body>
 

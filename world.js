@@ -18,7 +18,7 @@ class MissionMinecraft {
 		this._threejs.setPixelRatio(window.devicePixelRatio);
 		this._threejs.setSize(window.innerWidth, window.innerHeight);
 
-		this._mouseMode = 'pan';
+		this._mouseMode = 'interact';
 
 		document.body.appendChild(this._threejs.domElement);
 
@@ -343,17 +343,19 @@ class MissionMinecraft {
 		});
 	}
 	SUB_paintTileAtThisIntersect(intersect) {
-		//console.log(intersect);
-		//console.log(intersect.point);
 		let thisPaint = (this._paintTool == 'eraser') ? this._worldFile.floor.defaultTexture : this._selectedPaint;
-		let tileOrWall = intersect.object.userData.wall ? 2 : 0;
-		let tilePos = intersect.object.userData.wall ? intersect.object.userData.motherTile.userData.tilePos : intersect.object.userData.tilePos;
-		this._worldFile.floor.arr[tilePos.i][tilePos.j][tileOrWall] = thisPaint;
-		if (tileOrWall == 2) {
+		if (intersect.object.userData.wall) {
+			let tilePos = intersect.object.userData.motherTile.userData.tilePos;
+			this._worldFile.floor.arr[tilePos.i][tilePos.j][2] = thisPaint;
 			intersect.object.material = this._paints[thisPaint].clone();
 			intersect.object.material.side = THREE.DoubleSide;
 		} else {
+			let tilePos = intersect.object.userData.tilePos;
+			this._worldFile.floor.arr[tilePos.i][tilePos.j][0] = thisPaint;
 			intersect.object.material = this._paints[thisPaint];
+			if (this._worldFile.floor.arr[tilePos.i][tilePos.j][1] == 0) {
+				this._worldFile.floor.arr[tilePos.i][tilePos.j][2] = thisPaint;
+			}
 		}
 	}
 	SUB_bucketFillAtThisIntersect(intersect) {

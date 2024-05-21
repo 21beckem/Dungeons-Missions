@@ -26,13 +26,12 @@ for (i = 0; i < l; i++) {
             c.setAttribute('onclick', selElmnt.options[j].getAttribute('onclick'));
         }
         c.addEventListener("click", function (e) {
-            var i, s, h, sl, p;
+            var i, s, h, p;
             p = this.parentNode.parentNode;
             s = p.getElementsByTagName("select")[0];
-            sl = s.length;
             h = this.parentNode.previousSibling;
             if (p.getAttribute('type') != 'buttons') {
-                for (i = 0; i < sl; i++) {
+                for (i = 0; i < s.length; i++) {
                     if (s.options[i].getAttribute('value') == this.getAttribute('value')) {
                         p.value = s.options[i].getAttribute('value');
                         s.selectedIndex = i;
@@ -55,6 +54,12 @@ for (i = 0; i < l; i++) {
     x[i].appendChild(b);
     a.addEventListener("click", function (e) {
         e.stopPropagation();
+        let onlyOpenClass = this.parentElement.getAttribute('only-open-with-class');
+        if (onlyOpenClass) {
+            if (!this.parentElement.classList.contains(onlyOpenClass)) {
+                return;
+            }
+        }
         closeAllSelect(this);
         this.nextSibling.classList.toggle("select-hide");
     });
