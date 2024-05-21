@@ -28,21 +28,22 @@ function loadInWorlds() {
 	}
 }
 
-function createNewWorld(name, size, defaultTexture = 'grs') {
+function createNewWorld(name, size, defaultTexture = 'grs', defaultWallTexture = 'drt') {
 	let newWorldId = new Date().valueOf();
 	let newWorld = {
-		"name": name,
-		"id": newWorldId,
-		"lastEdited": new Date(),
-		"floor": {
-			"lastEdited" : new Date(),
-			"size": size,
-			"arr": null,
-			"defaultTexture": defaultTexture
+		name: name,
+		id: newWorldId,
+		lastEdited: new Date(),
+		floor: {
+			lastEdited : new Date(),
+			size: size,
+			arr: null,
+			defaultTexture: defaultTexture,
+			defaultWallTexture: defaultWallTexture
 		},
-		"entities": {
-			"lastEdited" : new Date(),
-			"arr" : new Array()
+		entities: {
+			lastEdited : new Date(),
+			arr : new Array()
 		}
 	}
 	let thisWorldsList = JSON.parse(localStorage.getItem('worldsList'));

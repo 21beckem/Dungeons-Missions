@@ -79,22 +79,3 @@ function closeAllSelect(el) {
     }
 }
 document.addEventListener("pointerdown", closeAllSelect);
-
-
-// const vertices = new Float32Array([
-//     // Front face
-//     w, h, d,   w, -h, d,   -w, -h, d,
-//     w, h, d,   -w, -h, d,   w, -h, d,
-//     // Back face
-//     w, h, -d,   w, -h, -d,  -w, -h, -d,
-//     w, h, -d,  -w, -h, -d,   w, -h, -d,
-//     // Top face
-//     -w, h, -d,   -w, h, d,    w, h, d,
-//     -w, h, -d,    w, h, d,    w, h, -d,
-//     // Right face
-//     -w, -h, -d,  -w, -h, -d,  -w, -h, d,
-//     -w, -h, -d,  -w, -h, d,   -w, -h, -d,
-//     // Left face
-//     w, h, d,   w, -h, d,   w, -h, -d,
-//     w, h, d,   w, -h, -d,   w, -h, d,
-// ]);

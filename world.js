@@ -349,7 +349,12 @@ class MissionMinecraft {
 		let tileOrWall = intersect.object.userData.wall ? 2 : 0;
 		let tilePos = intersect.object.userData.wall ? intersect.object.userData.motherTile.userData.tilePos : intersect.object.userData.tilePos;
 		this._worldFile.floor.arr[tilePos.i][tilePos.j][tileOrWall] = thisPaint;
-		intersect.object.material = this._paints[thisPaint];
+		if (tileOrWall == 2) {
+			intersect.object.material = this._paints[thisPaint].clone();
+			intersect.object.material.side = THREE.DoubleSide;
+		} else {
+			intersect.object.material = this._paints[thisPaint];
+		}
 	}
 	SUB_bucketFillAtThisIntersect(intersect) {
 		const bucketFillMatrix = (row, col, original) => {
@@ -593,63 +598,47 @@ class MissionMinecraft {
 		this._scene.background = texture;*/
 		this._scene.background = new THREE.Color( 0xf0f0f0 );
 	}
-	SUB_BoxNoBottomGeometry(width, height, depth) {
+	SUB_BoxNoBottomGeometry(ww, hh, dd) {
 		const geometry = new THREE.BufferGeometry();
-		let w = width / 2;
-		let d = depth / 2;  // ┘ , ┐ , ┌  <-old            ┌ , └ , ┘
-		let h = height / 2; // ┘ , ┌ , └  <-old            ┌ , ┘ , ┐
+		let w = ww / 2;
+		let h = hh / 2;  // ┘ , ┐ , ┌  <-old            ┌ , └ , ┘
+		let d = dd / 2; // ┘ , ┌ , └  <-old            ┌ , ┘ , ┐
 		const vertices = new Float32Array([
 			// Front face
-			w, -h, d,    w, h, d,   -w, h, d,
-			w, -h, d,    -w, h, d,   -w, -h, d,
+			-w, h, d,  -w,-h, d,   w,-h, d,
+			-w, h, d,   w,-h, d,   w, h, d,
 			// Back face
-			-w, -h, -d,   -w, h, -d,    w, h, -d,
-			-w, -h, -d,    w, h, -d,    w, -h, -d,
+			 w, h,-d,   w,-h,-d,  -w,-h,-d,
+			 w, h,-d,  -w,-h,-d,  -w, h,-d,
 			// Top face
-			-w, h, -d,   -w, h, d,    w, h, d,
-			-w, h, -d,    w, h, d,    w, h, -d,
+			-w, h,-d,  -w, h, d,   w, h, d,
+			-w, h,-d,   w, h, d,   w, h,-d,
 			// Right face
-			-w, -h, d,   -w, h, d,   -w, h, -d,
-			-w, -h, d,   -w, h, -d,  -w, -h, -d,
+			-w, h,-d,  -w,-h,-d,  -w,-h, d,
+			-w, h,-d,  -w,-h, d,  -w, h, d,
 			// Left face
-			w, -h, -d,    w, h, -d,   w, h, d,
-			w, -h, -d,    w, h, d,    w, -h, d,
-			// // Front face
-			// w, h, d,   w, -h, d,   -w, -h, d,
-			// w, h, d,   -w, h, d,   w, -h, d,
-			// // Back face
-			// w, h, -d,   w, -h, -d,  -w, -h, -d,
-			// w, h, -d,  -w, h, -d,   w, -h, -d,
-			// // Top face
-			// -w, h, -d,   -w, h, d,    w, h, d,
-			// -w, h, -d,    w, h, d,    w, h, -d,
-			// // Right face
-			// -w, -h, -d,  -w, -h, -d,  -w, -h, d, 
-			// -w, -h, -d,  -w, h, d,  -w, -h, -d,
-			// // Left face
-			// w, h, d,   w, -h, d,   w, -h, -d,
-			// w, h, d,   w, h, -d,   w, -h, d,
+			 w, h, d,   w,-h, d,   w,-h,-d,
+			 w, h, d,   w,-h,-d,   w, h,-d,
 		]);
 		geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
 		geometry.computeVertexNormals();
-		const repeatX = 1; // Number of times to repeat horizontally
-		const repeatY = 1; // Number of times to repeat vertically
+		const Y = 1 - (hh / ww);
 		const uv = new Float32Array([
 			// Front face
-			0, 0, repeatX, 0, repeatX, repeatY,
-			0, 0, repeatX, repeatY, 0, repeatY,
+			Y, 0,  1, 0,  1, 1,	
+			Y, 0,  1, 1,  Y, 1,
 			// Back face
-			0, 0, repeatX, 0, repeatX, repeatY,
-			0, 0, repeatX, repeatY, 0, repeatY,
+			Y, 0,  1, 0,  1, 1,	
+			Y, 0,  1, 1,  Y, 1,
 			// Top face
 			0, 0, 1, 0, 1, 1,
 			0, 0, 1, 1, 0, 1,
 			// Right face
-			0, 0, repeatX, 0, repeatX, repeatY,
-			0, 0, repeatX, repeatY, 0, repeatY,
+			Y, 0,  1, 0,  1, 1,	
+			Y, 0,  1, 1,  Y, 1,
 			// Left face
-			0, 0, repeatX, 0, repeatX, repeatY,
-			0, 0, repeatX, repeatY, 0, repeatY,
+			Y, 0,  1, 0,  1, 1,	
+			Y, 0,  1, 1,  Y, 1,
 		]);
 		geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
 	
@@ -671,12 +660,12 @@ class MissionMinecraft {
 			if (this._worldFile.floor.arr[i] == 0) {
 				this._worldFile.floor.arr[i] = new Array(size);
 				for (let l = 0; l < size; l++) {
-					this._worldFile.floor.arr[i][l] = [this._worldFile.floor.defaultTexture, 0, this._worldFile.floor.defaultTexture];
+					this._worldFile.floor.arr[i][l] = [this._worldFile.floor.defaultTexture, 0, this._worldFile.floor.defaultWallTexture];
 				}
 			}
 			let littleSquare = new THREE.Mesh(
 				// this.SUB_createCubeGeo(coordinates),
-				this.SUB_BoxNoBottomGeometry(this._squareSize, tileThick, this._squareSize, 1, 1),
+				this.SUB_BoxNoBottomGeometry(this._squareSize, tileThick, this._squareSize),
 				this._paints[this._worldFile.floor.arr[i][j][0]]
 			);
 			const height = this._worldFile.floor.arr[i][j][1];
