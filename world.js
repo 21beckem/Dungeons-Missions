@@ -383,7 +383,8 @@ class MissionMinecraft {
 			['snd_16.png', null],
 			['stn_16.jpg', null],
 			['wtr_16.png', 0x03e3fc],
-			['wud_16.png', null]
+			['wud_16.png', null],
+			['texture-map_16.png', null]
 		];
 		this._paints = {};
 		textures.forEach(text => {
@@ -595,45 +596,60 @@ class MissionMinecraft {
 	SUB_BoxNoBottomGeometry(width, height, depth) {
 		const geometry = new THREE.BufferGeometry();
 		let w = width / 2;
-		let h = height / 2;
-		let d = depth / 2;
+		let d = depth / 2;  // ┘ , ┐ , ┌  <-old            ┌ , └ , ┘
+		let h = height / 2; // ┘ , ┌ , └  <-old            ┌ , ┘ , ┐
 		const vertices = new Float32Array([
 			// Front face
-			-w, -h, d,    w, -h, d,   w, h, d,
-			-w, -h, d,    w, h, d,   -w, h, d,
+			w, -h, d,    w, h, d,   -w, h, d,
+			w, -h, d,    -w, h, d,   -w, -h, d,
 			// Back face
 			-w, -h, -d,   -w, h, -d,    w, h, -d,
 			-w, -h, -d,    w, h, -d,    w, -h, -d,
 			// Top face
 			-w, h, -d,   -w, h, d,    w, h, d,
 			-w, h, -d,    w, h, d,    w, h, -d,
-			// Left face
-			-w, -h, -d,   -w, -h, d,  -w, h, d,
-			-w, -h, -d,   -w, h, d,   -w, h, -d,
 			// Right face
+			-w, -h, d,   -w, h, d,   -w, h, -d,
+			-w, -h, d,   -w, h, -d,  -w, -h, -d,
+			// Left face
 			w, -h, -d,    w, h, -d,   w, h, d,
 			w, -h, -d,    w, h, d,    w, -h, d,
+			// // Front face
+			// w, h, d,   w, -h, d,   -w, -h, d,
+			// w, h, d,   -w, h, d,   w, -h, d,
+			// // Back face
+			// w, h, -d,   w, -h, -d,  -w, -h, -d,
+			// w, h, -d,  -w, h, -d,   w, -h, -d,
+			// // Top face
+			// -w, h, -d,   -w, h, d,    w, h, d,
+			// -w, h, -d,    w, h, d,    w, h, -d,
+			// // Right face
+			// -w, -h, -d,  -w, -h, -d,  -w, -h, d, 
+			// -w, -h, -d,  -w, h, d,  -w, -h, -d,
+			// // Left face
+			// w, h, d,   w, -h, d,   w, -h, -d,
+			// w, h, d,   w, h, -d,   w, -h, d,
 		]);
 		geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
 		geometry.computeVertexNormals();
 		const repeatX = 1; // Number of times to repeat horizontally
-		const repeatY = 10; // Number of times to repeat vertically
+		const repeatY = 1; // Number of times to repeat vertically
 		const uv = new Float32Array([
 			// Front face
-			0, 0, 0, 0, 0, repeatY,
-			0, 0, 0, repeatY, 0, repeatY,
+			0, 0, repeatX, 0, repeatX, repeatY,
+			0, 0, repeatX, repeatY, 0, repeatY,
 			// Back face
 			0, 0, repeatX, 0, repeatX, repeatY,
 			0, 0, repeatX, repeatY, 0, repeatY,
 			// Top face
 			0, 0, 1, 0, 1, 1,
 			0, 0, 1, 1, 0, 1,
+			// Right face
+			0, 0, repeatX, 0, repeatX, repeatY,
+			0, 0, repeatX, repeatY, 0, repeatY,
 			// Left face
 			0, 0, repeatX, 0, repeatX, repeatY,
 			0, 0, repeatX, repeatY, 0, repeatY,
-			// Right face
-			0, 0, 0, 0, 0, repeatY,
-			0, 0, 0, repeatY, 0, repeatY,
 		]);
 		geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
 	
