@@ -133,6 +133,27 @@ canvas {
 	text-align: center;
 }
 
+.bottomToolBox {
+	width: 100%;
+	display: flex;
+	background-color: white;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+.bottomToolBox select {
+	width: 100%;
+}
+
+.bottomToolBox * {
+	border: none;
+	background: white;
+	padding: 5px;
+	cursor: pointer;
+	margin: 0px;
+	font-size: 20px;
+}
+
 .loader {
 	border: 3px solid #f3f3f3;
 	border-radius: 50%;

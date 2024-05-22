@@ -273,6 +273,11 @@ class MissionMinecraft {
 			this._currentlySelectedEntityJsonLoc.notes = _('entityNotesInput').value;
 		}
 
+		_('inspectEditVoxels').onclick = () => {
+			localStorage.setItem('tempVoxelBuilderBuilt', JSON.stringify(this._currentlySelectedEntityJsonLoc.blocks));
+			location.href = 'entity-editor/';
+		}
+
 		_('inspectAdd45Btn').onclick = () => {
 			this._currentlySelectedEntityJsonLoc.rotation += 45;
 			this._currentlySelected.userData.entity.setRotation(this._currentlySelectedEntityJsonLoc.rotation);
