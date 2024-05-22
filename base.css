@@ -131,6 +131,9 @@ canvas {
 	cursor: pointer;
 	width: 140px;
 	text-align: center;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
 .bottomToolBox {

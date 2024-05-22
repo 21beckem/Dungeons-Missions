@@ -207,7 +207,7 @@ class MissionMinecraft {
 				this._raycaster.setFromCamera(this._clickMouse, this._camera);
 				const found = this._raycaster.intersectObjects(this._dragableObjects);
 				if (found.length > 0) {
-					if (this._pre_current_select == found[0].object) {
+					if (this._pre_current_select == found[0].object && !this._draggingMouseMovedYet) {
 						this.SUB_SelectEntity(this._pre_current_select);
 						this._pre_current_select = null;
 					} else {
