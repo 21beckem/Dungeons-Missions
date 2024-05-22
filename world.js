@@ -275,6 +275,7 @@ class MissionMinecraft {
 
 		_('inspectEditVoxels').onclick = () => {
 			localStorage.setItem('tempVoxelBuilderBuilt', JSON.stringify(this._currentlySelectedEntityJsonLoc.blocks));
+			localStorage.setItem('whereToStoreVoxelBuilderEdits', this._currentlySelectedEntityJsonLoc.id);
 			location.href = 'entity-editor/';
 		}
 
@@ -1157,7 +1158,15 @@ class MissionMinecraft {
 		const newId = Date.now().toString(36);
 		let thisObj = this.SUB_createCustomObject(jsn, defaultScale, null);
 		thisObj.id = newId;
-		// thisObj.setPosition(0, 0, 0); // cast raw from center of screen, if doesn't hit ground, default to 0, 0, 0
+
+		// get raycast position
+		this._raycaster.setFromCamera(new THREE.Vector2(), this._camera);
+		let found = this._raycaster.intersectObjects(this._groundANDwallTiles1D);
+		if (found.length > 0) {
+			thisObj.setPosition(found[0].point.x, found[0].point.y, found[0].point.z);
+		} else {
+			thisObj.setPosition(0, 0, 0);
+		}
 
 		let newEnt = {
 			id: newId,
@@ -1171,8 +1180,10 @@ class MissionMinecraft {
 		}
 		this._worldFile.entities.arr.push(newEnt);
 		this.setMouseMode('interact');
-		this.SUB_SelectEntity(thisObj.hitbox);
 		this.SUB_saveWorldFile_entities();
+		setTimeout(() => {
+			this.SUB_SelectEntity(thisObj.hitbox);
+		}, 100);
 	}
 }
 globalThis.InitMissionMinecraft = (mode='local') => {

@@ -2,7 +2,7 @@
 <html>
 
 <head>
-	<title>Mission Minecraft</title>
+	<title>Dungeons & Missions</title>
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	<script src="https://jscolor.com/release/2.5/jscolor-2.5.2/jscolor.js"></script>
 	<link rel="stylesheet" type="text/css" href="../base.css">
@@ -129,12 +129,17 @@ document.getElementById('importBtn').onchange = function() {
 	}
 	var fr = new FileReader();
 	fr.onload = function(e) { 
-		//console.log(e);
-		var result = JSON.parse(e.target.result);
-		console.log(result);
-		_APP._builtBlocks = result;
-		_APP.SUB_saveTempVoxelBuilderBuilt();
-		location.reload();
+		
+		JSAlert.confirm("You're about to replace this WHOLE design with the one you're uploading. You sure?", '<span style="color:orange">WOAH</span>', JSAlert.Icons.Warning)
+		.then((result) => {
+			if (result) {
+				var result = JSON.parse(e.target.result);
+				console.log(result);
+				_APP._builtBlocks = result;
+				_APP.SUB_saveTempVoxelBuilderBuilt();
+				location.reload();
+			}
+		});
 	}
 	fr.readAsText(files.item(0));
 };
@@ -164,10 +169,46 @@ function exportBtn() {
 }
 function saveAndExit() {
 	if (Object.keys(_APP._builtBlocks).length <= 0) {
-		JSAlert.alert("Probably should add at least 1 block, don't you think? ;)");
+		JSAlert.alert("Probably should add at least 1 block, don't you think? ;)", '', JSAlert.Icons.Failed);
 		return;
 	}
-	location.href = '../game.html';
+	JSAlert.confirm('Save and back to game?', '')
+	.then((result) => {
+		if (result) {
+			// get current world working on
+			_worldFile = null;
+			let idToOpen = null;
+			try {
+				idToOpen = localStorage.getItem('worldIdToOpen');
+				_worldFile = JSON.parse(localStorage.getItem('WorldFile-' + idToOpen));
+				if (!idToOpen || !_worldFile) {
+					console.error('WorldFile not found');
+					return;
+				}
+			} catch (e) {
+				console.log(e);
+				return;
+			}
+			
+			// find entity we're editing
+			let thisEnt = _worldFile.entities.arr.filter(x => x.id == localStorage.getItem('whereToStoreVoxelBuilderEdits'));
+			if (thisEnt.length < 1) {
+				console.error('Entity not fount');
+				return;
+			} else if (thisEnt.length < 1) {
+				console.error('Found several entities with same id');
+				return;
+			}
+			thisEnt = thisEnt[0];
+		
+			// save changes
+			thisEnt.blocks = _APP._builtBlocks;
+			localStorage.setItem('WorldFile-' + idToOpen, JSON.stringify(_worldFile));
+		
+			// back to game
+			location.href = '../game.html';
+		}
+	});
 }
 function clearBtn() {
 	JSAlert.confirm('Bro. Are you sure you want this? This will absolutely destroy all your hard work!!', '<span style="color:red">DANGER</span>', JSAlert.Icons.Warning)
@@ -178,6 +219,25 @@ function clearBtn() {
 		}
 	});
 }
+history.pushState(null, document.title, location.href);
+window.addEventListener('popstate', function (event)
+{
+	var alert = new JSAlert("That was a dangerous move! Let me help you out. Select one of the following:", '<span style="color:orange">WOAH</span>', JSAlert.Icons.Warning);
+	alert.addButton('Save').then(function() {
+		saveAndExit();
+	});
+	alert.addButton("Discard Changes").then(function() {
+		JSAlert.confirm('Are you sure you want to discard your changes?', '<span style="color:red">DANGER</span>', JSAlert.Icons.Warning)
+			.then((result) => {
+				if (result) {
+					location.href = '../game.html';
+				}
+			});
+	});
+	alert.addButton("Cancel");
+	alert.show();
+	history.pushState(null, document.title, location.href);
+});
 	</script>
 </body>
 
