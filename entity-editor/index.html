@@ -31,7 +31,7 @@
 		</div>
 		<div class="custom-select" type="buttons">
 			<select>
-				<option onclick="clearBtn()" src="../beckBtns/bucket.png" value="0"></option>
+				<option onclick="clearBtn()" src="../beckBtns/clean.png" value="0"></option>
 			</select>
 		</div>
 	</div>
@@ -73,7 +73,7 @@
 				onChange: 'updateColor(this)'
 			}" id="colorPickerInput" style="flex: 1; border:solid black 1px"></button>
 			<input type="text" value="#FF0000" id="ColorPickerValue" style="flex: 2; width: inherit;">
-			<button onclick="enableEyeDrop()" id="enableEyeDropBtn" style="flex: 1;"><img src="../beckBtns/bucket.png" style="width: 60px; image-rendering: pixelated;"></button>
+			<button onclick="enableEyeDrop()" id="enableEyeDropBtn" style="flex: 1;"><img src="../beckBtns/eyedropper.png" style="width: 40px; image-rendering: pixelated;"></button>
 		</div>
 	</div>
 	<script src="voxel-world.js" type="module"></script>
@@ -108,10 +108,12 @@ document.querySelectorAll('DIV.custom-select.can-be-active').forEach(select => {
 });
 
 function enableEyeDrop() {
-	_('enableEyeDropBtn').firstElementChild.src = _('enableEyeDropBtn').firstElementChild.src.replace('.png','_active.png');
+	if (!_('enableEyeDropBtn').firstElementChild.src.includes('_active')) {
+		_('enableEyeDropBtn').firstElementChild.src = _('enableEyeDropBtn').firstElementChild.src.replace('.png','_active.png');
+	}
 	_APP.enableEyeDrop((clrStr)=> {
 		_('colorPickerInput').jscolor.fromString(clrStr);
-		_('enableEyeDropBtn').firstElementChild.src = _('enableEyeDropBtn').firstElementChild.src.replace('_active','');
+		_('enableEyeDropBtn').firstElementChild.src = _('enableEyeDropBtn').firstElementChild.src.replaceAll('_active','');
 	})
 }
 function updateColor(picker) {
@@ -211,7 +213,7 @@ function saveAndExit() {
 	});
 }
 function clearBtn() {
-	JSAlert.confirm('Bro. Are you sure you want this? This will absolutely destroy all your hard work!!', '<span style="color:red">DANGER</span>', JSAlert.Icons.Warning)
+	JSAlert.confirm('Bro. Are you sure you want this? This will clear this whole object!', '<span style="color:red">CLEAR</span>', JSAlert.Icons.Warning)
 	.then((result) => {
 		if (result) {
 			localStorage.setItem('tempVoxelBuilderBuilt', '{}');

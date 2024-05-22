@@ -60,14 +60,14 @@ let addWorldButton = (scaler, i, worldJson, worldsListParent) => {
 	const LED = thisD.toISOString().split('T')[0].split('-');
 	const lastEditDateText = LED[1] + '/' + LED[2] + '/' + LED[0].substring(2);
 	worldsListParent.innerHTML += `
-		<div class="world" id="world-${i}">
-			<img src="" style="width: 65px; height: 65px" id="world-img-${i}" onclick="openWorld(${worldJson.id})">
+		<div class="world pixel-corners-4-4" id="world-${i}">
+			<img class="pixel-corners-4-2" src="" style="width: 65px; height: 65px" id="world-img-${i}" onclick="openWorld(${worldJson.id})">
 			<div class="world-info" onclick="openWorld(${worldJson.id})">
 				<div style="font-size: 27px;">${worldJson.name}</div>
 				<div style="margin-top:8px">Last Edit Date</div>
 				<div style="color: #8c8b87">${lastEditDateText}</div>
 			</div>
-			<div class="editBtn" onclick="editWorldBtn(${worldJson.id})"><i class="fa-solid fa-pen-ruler"></i></div>
+			<div class="editBtn" onclick="editWorldBtn(${worldJson.id})"><img src="beckBtns/pencil.png" style="width:35px; image-rendering: pixelated;"></div>
 		</div>
 	`;
 

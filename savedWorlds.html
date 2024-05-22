@@ -4,7 +4,7 @@
 <head>
 	<title>Dungeons & Missions</title>
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<script src="https://kit.fontawesome.com/0bddc0a0f7.js" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="base.css">
 </head>
 
 <body>
@@ -44,7 +44,6 @@
 
 		#worldsListParent .world {
 			background-color: white;
-			border-radius: 15px;
 			padding: 10px;
 			border: none;
 			margin-bottom: 15px;
@@ -64,8 +63,8 @@
 			font-size: 40px;
 			display: flex;
 			align-items: center;
-			padding-left: 20px;
-			padding-right: 10px;
+			padding-left: 13px;
+			padding-right: 3px;
 			border-left: solid black 1px;
 		}
 	</style>
@@ -79,8 +78,8 @@
 		<div style="width: 10px; height: 130px;"></div>
 
 		<div id="worldsListParent">
-			<div class="world" id="new-world-btn" style="font-size: 35px;" onclick="createNewWorld('new world', 30)">
-				<div style="width: 100%; text-align: center;"><i class="fa-regular fa-square-plus"></i> NEW MAP</div>
+			<div class="world pixel-corners-4-4" id="new-world-btn" style="font-size: 35px;" onclick="createNewWorld('new world', 30)">
+				<div style="width: 100%; text-align: center;"><img src="beckBtns/plus-square.png" style="image-rendering: pixelated; height: 0.9em; transform: translateY(4px);"> NEW MAP</div>
 			</div>
 		</div>
 
