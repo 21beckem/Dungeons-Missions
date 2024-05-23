@@ -260,16 +260,6 @@ class BasicWorldDemo {
 		this.SUB_addHistory();
 		localStorage.setItem('tempVoxelBuilderBuilt', JSON.stringify(this._builtBlocks));
 	}
-
-	SUB_addHistory() {
-		if (!this._history) {
-			this._history = new Array();
-		}
-		if (this._history.length >= 10) {
-			this._history.shift();
-		}
-		this._history.push(JSON.parse(localStorage.getItem('tempVoxelBuilderBuilt') || '{}'));
-	}
 	SUB_clear() {
 		this._builtVoxels.forEach(voxel => {
 			this._scene.remove(voxel);
@@ -280,13 +270,36 @@ class BasicWorldDemo {
 		this._canBuildOn = [this._groundPlane];
 	}
 
+	SUB_addHistory() {
+		if (!this._history) {
+			this._history = [];
+		}
+		this._redoHistory = [];
+		if (this._history.length >= 10) {
+			this._history.shift();
+		}
+		this._history.push(JSON.parse(localStorage.getItem('tempVoxelBuilderBuilt') || '{}'));
+	}
 	SUB_undo() {
 		if (!this._history || this._history.length < 1) { return; }
+
+		if (this._redoHistory.length >= 10) {
+			this._redoHistory.shift();
+		}
+		this._redoHistory.push(this._builtBlocks);
 		this._builtBlocks = this._history.pop();
 		
-		this._history.forEach(obj => {
-			console.log(Object.keys(obj).length);
-		});
+		this.SUB_clear();
+		this.SUB_generateVoxels();
+	}
+	
+	SUB_redo() {
+		if (!this._history || this._redoHistory.length < 1) { return; }
+		let toSet = this._redoHistory[this._redoHistory.length - 1] || null;
+		if (!toSet) { console.log('no redo set'); return; }
+		this._redoHistory.pop();
+		this._history.push( Object.assign({}, this._builtBlocks) );
+		this._builtBlocks = toSet;
 		this.SUB_clear();
 		this.SUB_generateVoxels();
 	}
