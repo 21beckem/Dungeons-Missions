@@ -157,23 +157,7 @@ class BasicWorldDemo {
 		this._canBuildOn.push(this._groundPlane);
 		this._builtBlocks = JSON.parse(localStorage.getItem('tempVoxelBuilderBuilt')) || {};
 
-		// create temp built blocks
-		Object.entries(this._builtBlocks).forEach(([key, val]) => {
-			//console.log(key, val);
-			let pos = this.SUB_voxelLocToPos(key.split(','));
-			//console.log(pos);
-			const voxel = new THREE.Mesh(
-				new THREE.BoxGeometry(this._buildSize, this._buildSize, this._buildSize),
-				new THREE.MeshPhongMaterial( {color: new THREE.Color('#'+val) } )
-			);
-			voxel.position.set( pos[0], pos[1], pos[2] );
-			voxel.castShadow = true;
-			voxel.receiveShadow = true;
-			voxel.userData.canBuildOn = true;
-			this._scene.add(voxel);
-			this._builtVoxels.push(voxel);
-			this._canBuildOn.push(voxel);
-		});
+		this.SUB_generateVoxels();
 
 		this._threejs.domElement.addEventListener('pointerdown', event => {
 			if (this._mouseMode != 'build' && this._mouseMode != 'erase') { return; }
@@ -204,6 +188,25 @@ class BasicWorldDemo {
 					}
 				}
 			}
+		});
+	}
+	SUB_generateVoxels() {
+		// create temp built blocks
+		Object.entries(this._builtBlocks).forEach(([key, val]) => {
+			//console.log(key, val);
+			let pos = this.SUB_voxelLocToPos(key.split(','));
+			//console.log(pos);
+			const voxel = new THREE.Mesh(
+				new THREE.BoxGeometry(this._buildSize, this._buildSize, this._buildSize),
+				new THREE.MeshPhongMaterial( {color: new THREE.Color('#'+val) } )
+			);
+			voxel.position.set( pos[0], pos[1], pos[2] );
+			voxel.castShadow = true;
+			voxel.receiveShadow = true;
+			voxel.userData.canBuildOn = true;
+			this._scene.add(voxel);
+			this._builtVoxels.push(voxel);
+			this._canBuildOn.push(voxel);
 		});
 	}
 	SUB_eraseCubeAtThisIntersect(intersect) {
@@ -254,7 +257,38 @@ class BasicWorldDemo {
 		return location.map(x => x = (parseInt(x) * this._buildSize) + (this._buildSize / 2) );
 	}
 	SUB_saveTempVoxelBuilderBuilt() {
+		this.SUB_addHistory();
 		localStorage.setItem('tempVoxelBuilderBuilt', JSON.stringify(this._builtBlocks));
+	}
+
+	SUB_addHistory() {
+		if (!this._history) {
+			this._history = new Array();
+		}
+		if (this._history.length >= 10) {
+			this._history.shift();
+		}
+		this._history.push(JSON.parse(localStorage.getItem('tempVoxelBuilderBuilt') || '{}'));
+	}
+	SUB_clear() {
+		this._builtVoxels.forEach(voxel => {
+			this._scene.remove(voxel);
+			voxel.geometry.dispose();
+			voxel.material.dispose();
+		});
+		this._builtVoxels = new Array();
+		this._canBuildOn = [this._groundPlane];
+	}
+
+	SUB_undo() {
+		if (!this._history || this._history.length < 1) { return; }
+		this._builtBlocks = this._history.pop();
+		
+		this._history.forEach(obj => {
+			console.log(Object.keys(obj).length);
+		});
+		this.SUB_clear();
+		this.SUB_generateVoxels();
 	}
 
 	SUB_createSkybox() {
