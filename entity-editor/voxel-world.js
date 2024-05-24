@@ -317,7 +317,13 @@ class BasicWorldDemo {
             throw new Error('Unsupported file format');
         }
 		if (geometry.type == 'Group') {
-			let mesh = geometry.children[0];
+			let mesh = new THREE.Mesh(
+				geometry.children[0].geometry,
+				new THREE.MeshPhongMaterial({
+					color: 0xff0000,
+					side: THREE.DoubleSide
+				})
+			);
 			console.log('Mesh loaded:', mesh);
 			return mesh;
 		} else if (geometry.type == 'BufferGeometry') {
