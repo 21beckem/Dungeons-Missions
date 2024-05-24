@@ -22,7 +22,7 @@
 			<select>
 				<option onclick="_('importBtn').click()" src="../beckBtns/import.png" value="0"></option>
 			</select>
-			<input id="importBtn" type="file" accept=".entity" style="display: none;">
+			<input id="importBtn" type="file" accept=".entity, .stl, .obj" style="display: none;">
 		</div>
 		<div class="custom-select" type="buttons">
 			<select>
@@ -123,11 +123,24 @@ setTimeout(()=>{
 	jscolor.trigger('change');
 },1000);
 
-document.getElementById('importBtn').onchange = function() {
+document.getElementById('importBtn').onchange = async function() {
 	var files = document.getElementById('importBtn').files;
 	//console.log(files);
 	if (files.length <= 0) {
 		return false;
+	}
+	console.log(files.item(0).type);
+	if (!files.item(0).name.toLowerCase().endsWith('.entity')) {
+		const mesh = await _APP.SUB_ModelFileToMesh( files.item(0) );
+		mesh.scale.set(1, 1, 1);
+		_APP._scene.add(mesh);
+		await new Promise(resolve => setTimeout(resolve, 500));
+		let output = await _APP.SUB_voxelizeMesh(mesh);
+		_APP._builtBlocks = output;
+		_APP.SUB_saveTempVoxelBuilderBuilt();
+		location.reload();
+		// _APP.addThisGeometryToScene(geo);
+		return;
 	}
 	var fr = new FileReader();
 	fr.onload = function(e) { 

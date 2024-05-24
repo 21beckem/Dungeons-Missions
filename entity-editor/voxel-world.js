@@ -1,5 +1,7 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.118/examples/jsm/controls/OrbitControls.js';
+import { STLLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.3/examples/jsm/loaders/STLLoader.js';
+import { OBJLoader } from 'https://cdn.jsdelivr.net/npm/three@0.118.3/examples/jsm/loaders/OBJLoader.js';
 
 
 class BasicWorldDemo {
@@ -304,6 +306,95 @@ class BasicWorldDemo {
 		this.SUB_generateVoxels();
 	}
 
+	async SUB_ModelFileToMesh(file) {
+        const arrayBuffer = await this.SUB_readFileAsArrayBuffer(file);
+        let geometry;
+        if (file.name.toLowerCase().endsWith('.stl')) {
+            geometry = await this.SUB_loadSTLFromArrayBuffer(arrayBuffer);
+        } else if (file.name.toLowerCase().endsWith('.obj')) {
+            geometry = await this.SUB_loadOBJFromArrayBuffer(arrayBuffer);
+        } else {
+            throw new Error('Unsupported file format');
+        }
+		if (geometry.type == 'Group') {
+			let mesh = geometry.children[0];
+			console.log('Mesh loaded:', mesh);
+			return mesh;
+		} else if (geometry.type == 'BufferGeometry') {
+			let mesh = new THREE.Mesh(
+				geometry,
+				new THREE.MeshPhongMaterial({
+					color: 0xff0000,
+					side: THREE.DoubleSide
+				})
+			);
+			console.log('Mesh loaded:', mesh);
+			return mesh;
+		}
+		return null;
+	}
+
+	SUB_readFileAsArrayBuffer(file) {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = () => resolve(reader.result);
+			reader.onerror = () => reject(reader.error);
+			reader.readAsArrayBuffer(file);
+		});
+	}
+	async SUB_loadSTLFromArrayBuffer(arrayBuffer) {
+		const loader = new STLLoader();
+		return new Promise((resolve, reject) => {
+			try {
+				const geometry = loader.parse(arrayBuffer);
+				resolve(geometry);
+			} catch (error) {
+				reject(error);
+			}
+		});
+	}
+	async SUB_loadOBJFromArrayBuffer(arrayBuffer) {
+		const loader = new OBJLoader();
+		return new Promise((resolve, reject) => {
+			try {
+				const text = new TextDecoder().decode(arrayBuffer);
+				const object = loader.parse(text);
+				resolve(object);
+			} catch (error) {
+				reject(error);
+			}
+		});
+	}
+	async SUB_voxelizeMesh(mesh) {
+		await sleep(500);
+
+		// voxelize
+		this._voxelizerRaycaster = new THREE.Raycaster();
+		let output = {};
+		const boundingBox = new THREE.Box3().setFromObject(mesh);
+		let startX = (this._buildSize*Math.ceil( boundingBox.min.x /this._buildSize)) - this._buildSize;
+		let startY = (this._buildSize*Math.ceil( boundingBox.min.y /this._buildSize)) - this._buildSize;
+		let startZ = (this._buildSize*Math.ceil( boundingBox.min.z /this._buildSize)) - this._buildSize;
+		for (let i = startX; i < boundingBox.max.x; i += this._buildSize) {
+			for (let j = startY; j < boundingBox.max.y; j += this._buildSize) {
+				for (let k = startZ; k < boundingBox.max.z; k += this._buildSize) {
+					const pos = new THREE.Vector3(i, j, k);
+					console.log('.');
+					if (await this.SUB_isInsideMesh(pos, mesh)) {
+						output[ [i / this._buildSize, j / this._buildSize, k / this._buildSize].join(',') ] = 'FF0000';
+					}
+				}
+			}
+		}
+		sleep(1000);
+		return output;
+	}
+	async SUB_isInsideMesh(pos, mesh) {
+		this._voxelizerRaycaster.set(pos, {x: 0, y: -1, z: 0});
+		let rayCasterIntersects = this._voxelizerRaycaster.intersectObject(mesh, false);
+		return rayCasterIntersects.length % 2 === 1; // we need odd number of intersections
+	}
+
 	SUB_createSkybox() {
 		/*const loader = new THREE.CubeTextureLoader();
 		const texture = loader.load([
@@ -364,6 +455,15 @@ class BasicWorldDemo {
 		this._eyeDropEnabled = true;
 		this._controls.enabled = false;
 	}
+	addThisGeometryToScene(geometry) {
+		let mesh = new THREE.Mesh(
+			geometry,
+			new THREE.MeshPhongMaterial({
+				color: 0xff0000
+			})
+		);
+		this._scene.add(mesh);
+	}
 }
 
 
@@ -371,3 +471,6 @@ class BasicWorldDemo {
 window.addEventListener('DOMContentLoaded', () => {
 	globalThis._APP = new BasicWorldDemo();
 });
+function sleep(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
