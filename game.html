@@ -9,6 +9,7 @@
 	<link rel="stylesheet" href="fonts/minecraft.css">
 	<link rel="stylesheet" href="fonts/bloxat.css">
 	<script src="jsalert.js"></script>
+	<script src="presets.js"></script>
 </head>
 
 <body>
@@ -39,123 +40,15 @@
 		</div>
 	</div>
 	<div id="presetSelectorParent">
-		<div class="tint-background"></div>
+		<div class="tint-background" onclick="this.parentElement.classList.remove('open')"></div>
 		<div class="mainWindowParent">
 			<div class="mainWindow pixel-corners-4-8-border">
 				<div class="body">
 					
-					<div class="x-button" onclick="this.parentElement.parentElement.parentElement.parentElement.style.display = 'none';">X</div>
+					<div class="x-button" onclick="this.parentElement.parentElement.parentElement.parentElement.classList.remove('open')">X</div>
 					<center><h3 style="font-family: bloxat;">Select an Entity</h3></center>
 
 					<div id="presetSelectionBox">
-						<preset>
-							<div class="left-box">
-								<div class="img" style="background-image: url('textures/texture-map_16.png');"></div>
-							</div>
-							<div class="right-box">
-								<div class="name">Chair</div>
-								<div class="author">James Rosenbeck</div>
-							</div>
-						</preset>
-						<preset>
-							<div class="left-box">
-								<div class="img" style="background-image: url('textures/snd_16.png');"></div>
-							</div>
-							<div class="right-box">
-								<div class="name">Sand</div>
-								<div class="author">Michael Becker</div>
-							</div>
-						</preset>
-						<preset>
-							<div class="left-box">
-								<div class="img" style="background-image: url('textures/grs_16.png');"></div>
-							</div>
-							<div class="right-box">
-								<div class="name">Grass</div>
-								<div class="author">Snus Trunky Becker</div>
-							</div>
-						</preset>
-						<preset>
-							<div class="left-box">
-								<div class="img" style="background-image: url('textures/texture-map_16.png');"></div>
-							</div>
-							<div class="right-box">
-								<div class="name">Chair</div>
-								<div class="author">James Rosenbeck</div>
-							</div>
-						</preset>
-						<preset>
-							<div class="left-box">
-								<div class="img" style="background-image: url('textures/snd_16.png');"></div>
-							</div>
-							<div class="right-box">
-								<div class="name">Sand</div>
-								<div class="author">Michael Becker</div>
-							</div>
-						</preset>
-						<preset>
-							<div class="left-box">
-								<div class="img" style="background-image: url('textures/grs_16.png');"></div>
-							</div>
-							<div class="right-box">
-								<div class="name">Grass</div>
-								<div class="author">Snus Trunky Becker</div>
-							</div>
-						</preset>
-						<preset>
-							<div class="left-box">
-								<div class="img" style="background-image: url('textures/texture-map_16.png');"></div>
-							</div>
-							<div class="right-box">
-								<div class="name">Chair</div>
-								<div class="author">James Rosenbeck</div>
-							</div>
-						</preset>
-						<preset>
-							<div class="left-box">
-								<div class="img" style="background-image: url('textures/snd_16.png');"></div>
-							</div>
-							<div class="right-box">
-								<div class="name">Sand</div>
-								<div class="author">Michael Becker</div>
-							</div>
-						</preset>
-						<preset>
-							<div class="left-box">
-								<div class="img" style="background-image: url('textures/grs_16.png');"></div>
-							</div>
-							<div class="right-box">
-								<div class="name">Grass</div>
-								<div class="author">Snus Trunky Becker</div>
-							</div>
-						</preset>
-						<preset>
-							<div class="left-box">
-								<div class="img" style="background-image: url('textures/texture-map_16.png');"></div>
-							</div>
-							<div class="right-box">
-								<div class="name">Chair</div>
-								<div class="author">James Rosenbeck</div>
-							</div>
-						</preset>
-						<preset>
-							<div class="left-box">
-								<div class="img" style="background-image: url('textures/snd_16.png');"></div>
-							</div>
-							<div class="right-box">
-								<div class="name">Sand</div>
-								<div class="author">Michael Becker</div>
-							</div>
-						</preset>
-						<preset>
-							<div class="left-box">
-								<div class="img" style="background-image: url('textures/grs_16.png');"></div>
-							</div>
-							<div class="right-box">
-								<div class="name">Grass</div>
-								<div class="author">Snus Trunky Becker</div>
-							</div>
-						</preset>
 					</div>
 
 				</div>
@@ -172,11 +65,7 @@
 		</div>
 		<div class="custom-select" type="buttons">
 			<select>
-				<option src="beckBtns/add_entity.png" value="0"></option>
-				<option onclick="_APP.importPresetEntity('player.entity', 3)" src="beckBtns/player.png" value="1"></option>
-				<option onclick="_APP.importPresetEntity('enemy.entity', 2)" src="beckBtns/enemy.png" value="2"></option>
-				<option onclick="_APP.importPresetEntity('npc.entity', 1)" src="beckBtns/npc.png" value="3"></option>
-				<option onclick="_APP.importPresetEntity('well.entity', 0)" src="beckBtns/object.png" value="4"></option>
+				<option src="beckBtns/object.png" onclick="_('presetSelectorParent').classList.add('open')" value="0"></option>
 			</select>
 		</div>
 		<div class="custom-select can-be-active" mode="paint" type="select" only-open-with-class="active" onchange="_APP._paintTool = ['brush','bucket','eraser'][this.value]">
@@ -283,6 +172,35 @@ function saveAndExit() {
 			}, 100);
 		}
 	});
+}
+
+// fill in presets list
+String.prototype.addSlashes = function() {
+    return this.replace(/\\/g, '\\\\').
+        replace(/\u0008/g, '\\b').
+        replace(/\t/g, '\\t').
+        replace(/\n/g, '\\n').
+        replace(/\f/g, '\\f').
+        replace(/\r/g, '\\r').
+        replace(/'/g, '\\\'').
+        replace(/"/g, '\\"');
+}
+let presetsList = _('presetSelectionBox');
+PRESETS.forEach(preset => {
+	presetsList.innerHTML += `
+	<preset onclick="useThisPreset('${preset.blocks.addSlashes()}', '${preset.name.addSlashes()}');">
+		<div class="left-box">
+			<div class="img" style="background-image: url('${preset.icon}');"></div>
+		</div>
+		<div class="right-box">
+			<div class="name">${preset.name}</div>
+			<div class="author">${preset.author}</div>
+		</div>
+	</preset>`;
+});
+function useThisPreset(blocks, nam) {
+	_APP.importEntityFromFile(blocks, nam);
+	_('presetSelectorParent').classList.remove('open');
 }
 	</script>
 </body>

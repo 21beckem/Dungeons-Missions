@@ -1151,7 +1151,7 @@ class MissionMinecraft {
 			this._terrainSquare.material.visible = false;
 		}
 	}
-	async importPresetEntity(objFileName, type) {
+	async importEntityFromFile(objFileName, name=null) {
 		let res = await fetch('entities/' + objFileName);
 		let jsn = await res.json();
 		const defaultScale = 1;
@@ -1170,9 +1170,8 @@ class MissionMinecraft {
 
 		let newEnt = {
 			id: newId,
-			name: objFileName.replace('.entity', ''),
+			name: name ? name : objFileName.replace('.entity', ''),
 			notes: '',
-			type: type,
 			blocks: jsn,
 			scale: defaultScale,
 			position: thisObj.position,
