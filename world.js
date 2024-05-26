@@ -73,7 +73,10 @@ class MissionMinecraft {
 				let code = localStorage.getItem('goBackToHosting');
 				history.pushState(null, null, '#r=' + code);
 				localStorage.removeItem('goBackToHosting');
-				this.startHosting(_('beginHostingBtn'));
+				if (localStorage.getItem('forceHostingBackOn') == '1') {
+					localStorage.removeItem('forceHostingBackOn');
+					this.startHosting(_('beginHostingBtn'));
+				}
 			}
 			Playroom.setState('WorldFile', this._worldFile);
 		} else {
@@ -82,7 +85,7 @@ class MissionMinecraft {
 				console.log(Playroom.getRoomCode());
 				console.log(this._worldFile);
 				if (!this._worldFile) {
-					//location.href = 'joinGame.html';
+					location.href = 'joinGame.html';
 				}
 			} catch (e) {
 				console.log(e);
@@ -287,6 +290,7 @@ class MissionMinecraft {
 			_('inspectEditVoxels').onclick = () => {
 				localStorage.setItem('tempVoxelBuilderBuilt', JSON.stringify(this._currentlySelectedEntityJsonLoc.blocks));
 				localStorage.setItem('whereToStoreVoxelBuilderEdits', this._currentlySelectedEntityJsonLoc.id);
+				localStorage.setItem('forceHostingBackOn', this.runningMulti ? '1' : '0');
 				location.href = 'entity-editor/';
 			}
 	
@@ -1215,7 +1219,7 @@ class MissionMinecraft {
 		}
 	}
 	async importEntityFromFile(objFileName, name=null) {
-		let res = await fetch('entities/' + objFileName);
+		let res = await fetch(objFileName);
 		let jsn = await res.json();
 		const newId = Date.now().toString(36);
 		this.SUB_AddNewEntity(jsn, newId, name);

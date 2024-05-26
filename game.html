@@ -196,7 +196,7 @@ PRESETS.forEach(preset => {
 	presetsList.innerHTML += `
 	<preset onclick="useThisPreset('${preset.blocks.addSlashes()}', '${preset.name.addSlashes()}');">
 		<div class="left-box">
-			<div class="img" style="background-image: url('${preset.icon}');"></div>
+			<div class="img" style="background-image: url('presets/${preset.icon}');"></div>
 		</div>
 		<div class="right-box">
 			<div class="name">${preset.name}</div>
@@ -205,7 +205,7 @@ PRESETS.forEach(preset => {
 	</preset>`;
 });
 function useThisPreset(blocks, nam) {
-	_APP.importEntityFromFile(blocks, nam);
+	_APP.importEntityFromFile('presets/' + blocks, nam);
 	_('presetSelectorParent').classList.remove('open');
 }
 	</script>
