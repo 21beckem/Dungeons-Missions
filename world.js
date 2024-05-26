@@ -69,6 +69,12 @@ class MissionMinecraft {
 				console.log(e);
 				location.href = 'index.html';
 			}
+			if (localStorage.getItem('goBackToHosting')) {
+				let code = localStorage.getItem('goBackToHosting');
+				history.pushState(null, null, '#r=' + code);
+				localStorage.removeItem('goBackToHosting');
+				this.startHosting(_('beginHostingBtn'));
+			}
 			Playroom.setState('WorldFile', this._worldFile);
 		} else {
 			try {
@@ -76,7 +82,7 @@ class MissionMinecraft {
 				console.log(Playroom.getRoomCode());
 				console.log(this._worldFile);
 				if (!this._worldFile) {
-					location.href = 'joinGame.html';
+					//location.href = 'joinGame.html';
 				}
 			} catch (e) {
 				console.log(e);
@@ -88,8 +94,9 @@ class MissionMinecraft {
 		if (JSON.stringify(this._worldFile) == localStorage.getItem('WorldFile-' + this._worldFile.id)) {
 			return;
 		}
-		this._worldFile.lastEdited = new Date();
-		this._worldFile.floor.lastEdited = new Date();
+		if (this.playMode != 'local') { return; }
+		this._worldFile.lastEdited = new Date().toISOString();
+		this._worldFile.floor.lastEdited = new Date().toISOString();
 		if (this.playMode == 'local') {
 			localStorage.setItem('WorldFile-' + this._worldFile.id, JSON.stringify(this._worldFile));
 		}
@@ -101,8 +108,9 @@ class MissionMinecraft {
 		if (JSON.stringify(this._worldFile) == localStorage.getItem('WorldFile-' + this._worldFile.id)) {
 			return;
 		}
-		this._worldFile.lastEdited = new Date();
-		this._worldFile.entities.lastEdited = new Date();
+		if (this.playMode != 'local') { return; }
+		this._worldFile.lastEdited = new Date().toISOString();
+		this._worldFile.entities.lastEdited = new Date().toISOString();
 		if (this.playMode == 'local') {
 			localStorage.setItem('WorldFile-' + this._worldFile.id, JSON.stringify(this._worldFile));
 		}
@@ -230,6 +238,7 @@ class MissionMinecraft {
 		});
 	}
 	SUB_dragEntityOnMouseMove() {
+		if (this.playMode != 'local') { return; }
 		if (this._mouseMode != 'interact') { return; }
 		if (this._draggingMouseMovedYet && this._currentlyDragging != null) {
 			this._raycaster.setFromCamera(this._moveMouse, this._camera);
@@ -253,49 +262,58 @@ class MissionMinecraft {
 		_('inspector').style.transform = 'TranslateY(0px)';
 		// fill in inspector
 		_('entityNameInput').value = this._currentlySelectedEntityJsonLoc.name;
-		_('entityNameInput').oninput = () => {
-			this._currentlySelectedEntityJsonLoc.name = _('entityNameInput').value;
-		}
 		_('entitySizeRangeValue').value = this._currentlySelectedEntityJsonLoc.scale * 25;
-		_('entitySizeRangeValue').oninput = () => {
-			this._currentlySelectedEntityJsonLoc.scale = parseFloat((_('entitySizeRangeValue').value) / 25) || 1;
-			_('entitySizeRange').value = _('entitySizeRangeValue').value;
-			this._currentlySelected.userData.entity.setScale(this._currentlySelectedEntityJsonLoc.scale);
-		}
-		_('entitySizeRange').value = this._currentlySelectedEntityJsonLoc.scale * 25;
-		_('entitySizeRange').oninput = () => {
-			this._currentlySelectedEntityJsonLoc.scale = parseFloat((_('entitySizeRange').value) / 25) || 1;
-			_('entitySizeRangeValue').value = _('entitySizeRange').value;
-			this._currentlySelected.userData.entity.setScale(this._currentlySelectedEntityJsonLoc.scale);
-		}
-		_('entityNotesInput').value = this._currentlySelectedEntityJsonLoc.notes;
-		_('entityNotesInput').oninput = () => {
-			this._currentlySelectedEntityJsonLoc.notes = _('entityNotesInput').value;
+		if (this.playMode == 'local') {
+			_('entityNameInput').oninput = () => {
+				this._currentlySelectedEntityJsonLoc.name = _('entityNameInput').value;
+			}
+			_('entitySizeRangeValue').oninput = () => {
+				this._currentlySelectedEntityJsonLoc.scale = parseFloat((_('entitySizeRangeValue').value) / 25) || 1;
+				_('entitySizeRange').value = _('entitySizeRangeValue').value;
+				this._currentlySelected.userData.entity.setScale(this._currentlySelectedEntityJsonLoc.scale);
+			}
+			_('entitySizeRange').value = this._currentlySelectedEntityJsonLoc.scale * 25;
+			_('entitySizeRange').oninput = () => {
+				this._currentlySelectedEntityJsonLoc.scale = parseFloat((_('entitySizeRange').value) / 25) || 1;
+				_('entitySizeRangeValue').value = _('entitySizeRange').value;
+				this._currentlySelected.userData.entity.setScale(this._currentlySelectedEntityJsonLoc.scale);
+			}
+			_('entityNotesInput').value = this._currentlySelectedEntityJsonLoc.notes;
+			_('entityNotesInput').oninput = () => {
+				this._currentlySelectedEntityJsonLoc.notes = _('entityNotesInput').value;
+			}
+
+
+			_('inspectEditVoxels').onclick = () => {
+				localStorage.setItem('tempVoxelBuilderBuilt', JSON.stringify(this._currentlySelectedEntityJsonLoc.blocks));
+				localStorage.setItem('whereToStoreVoxelBuilderEdits', this._currentlySelectedEntityJsonLoc.id);
+				location.href = 'entity-editor/';
+			}
+	
+			_('inspectAdd45Btn').onclick = () => {
+				this._currentlySelectedEntityJsonLoc.rotation += 45;
+				this._currentlySelected.userData.entity.setRotation(this._currentlySelectedEntityJsonLoc.rotation);
+			}
+			_('inspectSub45Btn').onclick = () => {
+				this._currentlySelectedEntityJsonLoc.rotation -= 45;
+				this._currentlySelected.userData.entity.setRotation(this._currentlySelectedEntityJsonLoc.rotation);
+			}
+			_('entityTrashButton').onclick = () => {
+				JSAlert.confirm('Are you sure you want to delete ' + this._currentlySelectedEntityJsonLoc.name + '?', '<span style="color:red">DANGER</span>', JSAlert.Icons.Warning)
+				.then((result) => {
+					if (result) {
+						this._currentlySelected.userData.entity.delete(this._currentlySelected.userData.entity);
+						this.SUB_UnselectEntity();
+					}
+				});
+			}
+		} else {
+			_('entityNameInput').disabled = true;
+			_('entitySizeRangeValue').disabled = true;
+			_('Inspector_DM_eyes_only').style.display = 'none';
+			_('entityTrashButton').style.display = 'none';
 		}
 
-		_('inspectEditVoxels').onclick = () => {
-			localStorage.setItem('tempVoxelBuilderBuilt', JSON.stringify(this._currentlySelectedEntityJsonLoc.blocks));
-			localStorage.setItem('whereToStoreVoxelBuilderEdits', this._currentlySelectedEntityJsonLoc.id);
-			location.href = 'entity-editor/';
-		}
-
-		_('inspectAdd45Btn').onclick = () => {
-			this._currentlySelectedEntityJsonLoc.rotation += 45;
-			this._currentlySelected.userData.entity.setRotation(this._currentlySelectedEntityJsonLoc.rotation);
-		}
-		_('inspectSub45Btn').onclick = () => {
-			this._currentlySelectedEntityJsonLoc.rotation -= 45;
-			this._currentlySelected.userData.entity.setRotation(this._currentlySelectedEntityJsonLoc.rotation);
-		}
-		_('entityTrashButton').onclick = () => {
-			JSAlert.confirm('Are you sure you want to delete ' + this._currentlySelectedEntityJsonLoc.name + '?', '<span style="color:red">DANGER</span>', JSAlert.Icons.Warning)
-			.then((result) => {
-				if (result) {
-					this._currentlySelected.userData.entity.delete(this._currentlySelected.userData.entity);
-					this.SUB_UnselectEntity();
-				}
-			});
-		}
 	}
 	SUB_UnselectEntity() {
 		_('inspector').style.transform = 'TranslateY(-' + _('inspector').offsetHeight + 'px)';
@@ -1005,6 +1023,7 @@ class MissionMinecraft {
 					self.outline.material.dispose();
 
 					this._worldFile.entities.arr = this._worldFile.entities.arr.filter(x => x.id != self.id);
+					this._dragableObjects = this._dragableObjects.filter(x => x.userData.entity.id != self.id);
 				}
 			}
 			hitbox.userData.entity = output;
@@ -1014,6 +1033,39 @@ class MissionMinecraft {
 			return output;
 		}
 		return null;
+	}
+
+	SUB_AddNewEntity(jsn, newId, name=null, autoSelect=true) {
+		const defaultScale = 1;
+		let thisObj = this.SUB_createCustomObject(jsn, defaultScale, null);
+		thisObj.id = newId;
+
+		// get raycast position
+		this._raycaster.setFromCamera(new THREE.Vector2(), this._camera);
+		let found = this._raycaster.intersectObjects(this._groundANDwallTiles1D);
+		if (found.length > 0) {
+			thisObj.setPosition(found[0].point.x, found[0].point.y, found[0].point.z);
+		} else {
+			thisObj.setPosition(0, 0, 0);
+		}
+
+		let newEnt = {
+			id: newId,
+			name: name ? name : objFileName.replace('.entity', ''),
+			notes: '',
+			blocks: jsn,
+			scale: defaultScale,
+			position: thisObj.position,
+			rotation: thisObj.rotation
+		}
+		this._worldFile.entities.arr.push(newEnt);
+		this.setMouseMode('interact');
+		this.SUB_saveWorldFile_entities();
+		if (autoSelect) {
+			setTimeout(() => {
+				this.SUB_SelectEntity(thisObj.hitbox);
+			}, 100);
+		}
 	}
 
 	SUB_createEntitiesOnLoad() {
@@ -1050,6 +1102,12 @@ class MissionMinecraft {
 								if (index !== -1) {
 									theseEntities.splice(index, 1);
 								}
+								if (JSON.stringify(entity.blocks) != JSON.stringify( this._worldFile.entities.arr.filter(x => x.id == entity.id)[0].blocks )) {
+									console.log('re-blocking');
+									thisMesh.userData.entity.delete(thisMesh.userData.entity);
+									this.SUB_AddNewEntity(entity.blocks, entity.id, entity.name, false);
+									thisMesh = this._dragableObjects.filter(x => x.userData.entity.id == entity.id)[0];
+								}
 								thisMesh.userData.entity.setPosition(...entity.position);
 								thisMesh.userData.entity.setRotation(entity.rotation);
 								thisMesh.userData.entity.setScale(entity.scale);
@@ -1069,7 +1127,7 @@ class MissionMinecraft {
 							});
 						}
 					}
-					this._worldFile = playFile;
+					this._worldFile = Object.assign({}, playFile);
 					if (floorEdited) {
 						this.SUB_createFloor();
 					}
@@ -1099,10 +1157,12 @@ class MissionMinecraft {
 			await Playroom.insertCoin({skipLobby: true}, () => {
 				beginHostingBtn.innerHTML = Playroom.getRoomCode();
 				this.runningMulti = true;
-			
-				Playroom.setState('WorldFile', this._worldFile);
+				setTimeout(() => {
+					Playroom.setState('WorldFile', this._worldFile);
+				}, 100);
 			});
 		}
+		localStorage.setItem('goBackToHosting', location.hash.replace('#r=', ''));
 	}
 	async joinGameWithCode(beginHostingBtn, code) {
 		await Playroom.insertCoin({
@@ -1116,6 +1176,9 @@ class MissionMinecraft {
 	}
 	getRoomCode() {
 		return Playroom.getRoomCode();
+	}
+	Playroom() {
+		return Playroom;
 	}
 	// # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 	//  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -1154,35 +1217,8 @@ class MissionMinecraft {
 	async importEntityFromFile(objFileName, name=null) {
 		let res = await fetch('entities/' + objFileName);
 		let jsn = await res.json();
-		const defaultScale = 1;
 		const newId = Date.now().toString(36);
-		let thisObj = this.SUB_createCustomObject(jsn, defaultScale, null);
-		thisObj.id = newId;
-
-		// get raycast position
-		this._raycaster.setFromCamera(new THREE.Vector2(), this._camera);
-		let found = this._raycaster.intersectObjects(this._groundANDwallTiles1D);
-		if (found.length > 0) {
-			thisObj.setPosition(found[0].point.x, found[0].point.y, found[0].point.z);
-		} else {
-			thisObj.setPosition(0, 0, 0);
-		}
-
-		let newEnt = {
-			id: newId,
-			name: name ? name : objFileName.replace('.entity', ''),
-			notes: '',
-			blocks: jsn,
-			scale: defaultScale,
-			position: thisObj.position,
-			rotation: thisObj.rotation
-		}
-		this._worldFile.entities.arr.push(newEnt);
-		this.setMouseMode('interact');
-		this.SUB_saveWorldFile_entities();
-		setTimeout(() => {
-			this.SUB_SelectEntity(thisObj.hitbox);
-		}, 100);
+		this.SUB_AddNewEntity(jsn, newId, name);
 	}
 }
 globalThis.InitMissionMinecraft = (mode='local') => {

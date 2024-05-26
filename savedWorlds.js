@@ -33,16 +33,16 @@ function createNewWorld(name, size, defaultTexture = 'grs', defaultWallTexture =
 	let newWorld = {
 		name: name,
 		id: newWorldId,
-		lastEdited: new Date(),
+		lastEdited: new Date().toISOString(),
 		floor: {
-			lastEdited : new Date(),
+			lastEdited : new Date().toISOString(),
 			size: size,
 			arr: null,
 			defaultTexture: defaultTexture,
 			defaultWallTexture: defaultWallTexture
 		},
 		entities: {
-			lastEdited : new Date(),
+			lastEdited : new Date().toISOString(),
 			arr : new Array()
 		}
 	}
@@ -131,6 +131,9 @@ function saveWorldName(worldId, nam) {
 }
 
 function openWorld(worldId) {
+	if (worldId != localStorage.getItem('worldIdToOpen')) {
+		localStorage.removeItem('goBackToHosting');
+	}
 	localStorage.setItem('worldIdToOpen', worldId);
 	location.href = 'game.html';
 }

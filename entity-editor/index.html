@@ -217,6 +217,8 @@ function saveAndExit() {
 			thisEnt = thisEnt[0];
 		
 			// save changes
+			_worldFile.lastEdited = new Date().toISOString();
+			_worldFile.entities.lastEdited = new Date().toISOString();
 			thisEnt.blocks = _APP._builtBlocks;
 			localStorage.setItem('WorldFile-' + idToOpen, JSON.stringify(_worldFile));
 		
