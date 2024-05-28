@@ -68,7 +68,7 @@
 		</div>
 		<div class="custom-select" type="buttons">
 			<select>
-				<option src="beckBtns/object.png" onclick="_('presetSelectorParent').classList.add('open')" value="0"></option>
+				<option src="beckBtns/object.png" onclick="openPresetMenu()" value="0"></option>
 			</select>
 		</div>
 		<div class="custom-select can-be-active" mode="paint" type="select" only-open-with-class="active" onchange="_APP._paintTool = ['brush','bucket','eraser'][this.value]">
@@ -192,22 +192,70 @@ String.prototype.addSlashes = function() {
         replace(/'/g, '\\\'').
         replace(/"/g, '\\"');
 }
-let presetsList = _('presetSelectionBox');
-PRESETS.forEach(preset => {
-	presetsList.innerHTML += `
-	<preset onclick="useThisPreset('${preset.blocks.addSlashes()}', '${preset.name.addSlashes()}');">
-		<div class="left-box">
-			<div class="img" style="background-image: url('presets/${preset.icon}');"></div>
-		</div>
-		<div class="right-box">
-			<div class="name">${preset.name}</div>
-			<div class="author">${preset.author}</div>
-		</div>
-	</preset>`;
+let presetsBox = _('presetSelectionBox');
+let homeFolder = '<div id="preset_folder_0" class="preset_folder">';
+PRESETS.forEach((preset, i) => {
+	if (preset.hasOwnProperty('folder')) {
+		i++;
+		let toAdd = `<div class="preset_folder" id="preset_folder_${i}" style="display: none;">
+			<preset onclick="openThisPresetFolder(0);">
+				<div class="right-box" style="padding: 12px">
+					<div class="name">&lt; Back</div>
+				</div>
+			</preset>`;
+
+		preset.folder.forEach((x, j) => {
+			toAdd += `
+				<preset onclick="useThisPreset('${x.blocks.addSlashes()}', '${x.name.addSlashes()}');">
+					<div class="left-box">
+						<div class="img" style="background-image: url('presets/${x.icon}');"></div>
+					</div>
+					<div class="right-box">
+						<div class="name">${x.name}</div>
+						<div class="author">${x.author}</div>
+					</div>
+				</preset>`;
+			});
+
+		toAdd += '</div>';
+		presetsBox.innerHTML += toAdd;
+
+		homeFolder += `
+			<preset onclick="openThisPresetFolder(${i});">
+				<div class="left-box">
+					<div class="img" style="background-image: url('img/folder_icon.png');"></div>
+				</div>
+				<div class="right-box">
+					<div class="name" style="padding-top:10px">${preset.name}</div>
+				</div>
+			</preset>`;
+	} else {
+		homeFolder += `
+			<preset onclick="useThisPreset('${preset.blocks.addSlashes()}', '${preset.name.addSlashes()}');">
+				<div class="left-box">
+					<div class="img" style="background-image: url('presets/${preset.icon}');"></div>
+				</div>
+				<div class="right-box">
+					<div class="name">${preset.name}</div>
+					<div class="author">${preset.author}</div>
+				</div>
+			</preset>`;
+	}
 });
+homeFolder += '</div>';
+presetsBox.innerHTML += homeFolder;
+function openPresetMenu() {
+	_('presetSelectorParent').classList.add('open');
+	openThisPresetFolder(0);
+}
 function useThisPreset(blocks, nam) {
 	_APP.importEntityFromFile('presets/' + blocks, nam);
 	_('presetSelectorParent').classList.remove('open');
+}
+function openThisPresetFolder(i) {
+	document.getElementsByClassName('preset_folder').forEach(x => x.style.display = 'none');
+	_('preset_folder_' + i).style.display = 'block';
+	presetsBox.scrollTo(0, 0);
 }
 	</script>
 </body>

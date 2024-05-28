@@ -1,33 +1,142 @@
 const PRESETS = [
     {
-        name: "Player",
-        author: "James Rosenbeck",
-        icon: "player.jpg",
-        blocks: "player.entity"
+        name: "Color Tokens",
+        folder: [
+            {
+                name: "Green Token",
+                author: "James Rosenbeck",
+                icon: "token-green.jpg",
+                blocks: "token-green.entity"
+            },
+            {
+                name: "Red Token",
+                author: "James Rosenbeck",
+                icon: "token-red.jpg",
+                blocks: "token-red.entity"
+            },
+            {
+                name: "Light Blue Token",
+                author: "James Rosenbeck",
+                icon: "token-light-blue.jpg",
+                blocks: "token-light-blue.entity"
+            },
+            {
+                name: "Blue Token",
+                author: "James Rosenbeck",
+                icon: "token-blue.jpg",
+                blocks: "token-blue.entity"
+            },
+            {
+                name: "Grey Token",
+                author: "James Rosenbeck",
+                icon: "token-grey.jpg",
+                blocks: "token-grey.entity"
+            },
+            {
+                name: "Orange Token",
+                author: "James Rosenbeck",
+                icon: "token-orange.jpg",
+                blocks: "token-orange.entity"
+            },
+            {
+                name: "Pink Token",
+                author: "James Rosenbeck",
+                icon: "token-pink.jpg",
+                blocks: "token-pink.entity"
+            },
+            {
+                name: "Purple Token",
+                author: "James Rosenbeck",
+                icon: "token-purple.jpg",
+                blocks: "token-purple.entity"
+            },
+            {
+                name: "Yellow Token",
+                author: "James Rosenbeck",
+                icon: "token-yellow.jpg",
+                blocks: "token-yellow.entity"
+            }
+        ]
     },
     {
-        name: "Enemy",
-        author: "James Rosenbeck",
-        icon: "enemy.jpg",
-        blocks: "enemy.entity"
+        name: "Chairs",
+        folder: [
+            {
+                name: "Basic Chair",
+                author: "James Rosenbeck",
+                icon: "basic-chair.jpg",
+                blocks: "basic-chair.entity"
+            },
+            {
+                name: "Throne Chair",
+                author: "James Rosenbeck",
+                icon: "throne-chair.jpg",
+                blocks: "throne-chair.entity"
+            }
+        ]
     },
     {
-        name: "NPC",
-        author: "James Rosenbeck",
-        icon: "npc.jpg",
-        blocks: "npc.entity"
+        name: "Tables",
+        folder: [
+            {
+                name: "Round Table",
+                author: "James Rosenbeck",
+                icon: "round-table.jpg",
+                blocks: "round-table.entity"
+            },
+            {
+                name: "Square Table",
+                author: "James Rosenbeck",
+                icon: "square-table.jpg",
+                blocks: "square-table.entity"
+            }
+        ]
     },
     {
-        name: "Basic Chair",
-        author: "James Rosenbeck",
-        icon: "basic-chair.jpg",
-        blocks: "basic-chair.entity"
+        name: "Doors",
+        folder: [
+            {
+                name: "Basic Door",
+                author: "James Rosenbeck",
+                icon: "basic-door.jpg",
+                blocks: "basic-door.entity"
+            },
+            {
+                name: "Fancy Door",
+                author: "James Rosenbeck",
+                icon: "fancy-door.jpg",
+                blocks: "fancy-door.entity"
+            }
+        ]
     },
     {
-        name: "Basic Door",
-        author: "James Rosenbeck",
-        icon: "basic-door.jpg",
-        blocks: "basic-door.entity"
+        name: "Nature",
+        folder: [
+            {
+                name: "Rock Mound",
+                author: "James Rosenbeck",
+                icon: "rock-mound.jpg",
+                blocks: "rock-mound.entity"
+            },
+            {
+                name: "Shade Tree",
+                author: "James Rosenbeck",
+                icon: "shade-tree.jpg",
+                blocks: "shade-tree.entity"
+            },
+            {
+                name: "Shrub",
+                author: "James Rosenbeck",
+                icon: "shrub.jpg",
+                blocks: "shrub.entity"
+            },
+            {
+                name: "Simple Tree",
+                author: "James Rosenbeck",
+                icon: "simple-tree.jpg",
+                blocks: "simple-tree.entity"
+            }
+        ]
     },
     {
         name: "Bench",
@@ -48,58 +157,16 @@ const PRESETS = [
         blocks: "chest.entity"
     },
     {
-        name: "Fancy Door",
-        author: "James Rosenbeck",
-        icon: "fancy-door.jpg",
-        blocks: "fancy-door.entity"
-    },
-    {
-        name: "Rock Mound",
-        author: "James Rosenbeck",
-        icon: "rock-mound.jpg",
-        blocks: "rock-mound.entity"
-    },
-    {
-        name: "Round Table",
-        author: "James Rosenbeck",
-        icon: "round-table.jpg",
-        blocks: "round-table.entity"
-    },
-    {
         name: "Rowboat",
         author: "James Rosenbeck",
         icon: "rowboat.jpg",
         blocks: "rowboat.entity"
     },
     {
-        name: "Shade Tree",
-        author: "James Rosenbeck",
-        icon: "shade-tree.jpg",
-        blocks: "shade-tree.entity"
-    },
-    {
-        name: "Shrub",
-        author: "James Rosenbeck",
-        icon: "shrub.jpg",
-        blocks: "shrub.entity"
-    },
-    {
-        name: "Simple Tree",
-        author: "James Rosenbeck",
-        icon: "simple-tree.jpg",
-        blocks: "simple-tree.entity"
-    },
-    {
         name: "Smily Face",
         author: "James Rosenbeck",
         icon: "smily-face.jpg",
         blocks: "smily-face.entity"
-    },
-    {
-        name: "Square Table",
-        author: "James Rosenbeck",
-        icon: "square-table.jpg",
-        blocks: "square-table.entity"
     },
     {
         name: "Target",
@@ -112,12 +179,6 @@ const PRESETS = [
         author: "James Rosenbeck",
         icon: "tent.jpg",
         blocks: "tent.entity"
-    },
-    {
-        name: "Throne Chair",
-        author: "James Rosenbeck",
-        icon: "throne-chair.jpg",
-        blocks: "throne-chair.entity"
     },
     {
         name: "Torch",
