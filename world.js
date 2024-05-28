@@ -85,6 +85,7 @@ class MissionMinecraft {
 				console.log(Playroom.getRoomCode());
 				console.log(this._worldFile);
 				if (!this._worldFile) {
+					console.log('no world file found');
 					location.href = 'joinGame.html';
 				}
 			} catch (e) {
@@ -194,16 +195,21 @@ class MissionMinecraft {
 			this._clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
 			this._clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-
 			this._raycaster.setFromCamera(this._clickMouse, this._camera);
 			const found = this._raycaster.intersectObjects(this._dragableObjects);
 			
 			if (found.length > 0) {
-				if (this._currentlySelected == found[0].object) { // already selected. now drag.
+				let thisObj = found[0].object;
+				let findSelected = found.filter(x => x.object == this._currentlySelected);
+				if (findSelected.length > 0) {
+					thisObj = findSelected[0].object;
+				}
+
+				if (this._currentlySelected == thisObj) { // already selected. now drag.
 					this._currentlyDragging = this._currentlySelected;
 					this._controls.enabled = false;
 				} else {
-					this._pre_current_select = found[0].object;
+					this._pre_current_select = thisObj;
 				}
 			} else {
 				this._pre_deselect = true;
@@ -292,6 +298,9 @@ class MissionMinecraft {
 				localStorage.setItem('whereToStoreVoxelBuilderEdits', this._currentlySelectedEntityJsonLoc.id);
 				localStorage.setItem('forceHostingBackOn', this.runningMulti ? '1' : '0');
 				location.href = 'entity-editor/';
+			}
+			_('inspectDuplicateBtn').onclick = () => {
+				this.SUB_duplicateEntity(this._currentlySelectedEntityJsonLoc);
 			}
 	
 			_('inspectAdd45Btn').onclick = () => {
@@ -1070,6 +1079,24 @@ class MissionMinecraft {
 				this.SUB_SelectEntity(thisObj.hitbox);
 			}, 100);
 		}
+		return newEnt;
+	}
+	SUB_duplicateEntity(entity) {
+		const newId = Date.now().toString(36);
+		let newEnt = this.SUB_AddNewEntity(entity.blocks, newId, entity.name + ' (copy)', false);
+		newEnt.position = entity.position;
+		newEnt.rotation = entity.rotation;
+		newEnt.scale = entity.scale;
+
+		let thisMesh = this._dragableObjects.filter(x => x.userData.entity.id == newId)[0];
+		thisMesh.userData.entity.setPosition(...entity.position);
+		thisMesh.userData.entity.setRotation(entity.rotation);
+		thisMesh.userData.entity.setScale(entity.scale);
+		this.SUB_saveWorldFile_entities();
+
+		setTimeout(() => {
+			this.SUB_SelectEntity(thisMesh.userData.entity.hitbox);
+		}, 100);
 	}
 
 	SUB_createEntitiesOnLoad() {

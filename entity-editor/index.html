@@ -237,8 +237,7 @@ function clearBtn() {
 	});
 }
 history.pushState(null, document.title, location.href);
-window.addEventListener('popstate', function (event)
-{
+window.addEventListener('popstate', function (event) {
 	var alert = new JSAlert("That was a dangerous move! Let me help you out. Select one of the following:", '<span style="color:orange">WOAH</span>', JSAlert.Icons.Warning);
 	alert.addButton('Save').then(function() {
 		saveAndExit();

@@ -150,7 +150,7 @@ canvas {
 	width: calc(100% - 60px);
 	max-height: 450px;
 	height: calc(100% - 60px);
-	background-color: rgb(95, 95, 95);
+	background-color: #616161;
 	pointer-events: all;
 }
 #presetSelectorParent .mainWindow .body {

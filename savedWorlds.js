@@ -138,4 +138,9 @@ function openWorld(worldId) {
 	location.href = 'game.html';
 }
 
+history.pushState(null, document.title, location.href);
+window.addEventListener('popstate', function (event) {
+	this.location.href = 'index.html';
+});
+
 loadInWorlds();
