@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Dungeons & Missions</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<script src="https://kit.fontawesome.com/0bddc0a0f7.js" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="fonts/bloxat.css">
+	<link rel="stylesheet" href="fonts/minecraft.css">
+	<link rel="stylesheet" href="base.css">
+	<link rel="manifest" href="manifest.webmanifest" />
+
+</head>
+
+<body>
+	<style>
+		html,
+		body {
+			margin: 0;
+			padding: 0;
+			width: 100%;
+			height: 100%;
+			background-color: #616161;
+			font-family: minecraft;
+			color: white;
+			overflow-x: hidden;
+		}
+
+		#title {
+			margin-top: 75px;
+		}
+
+		#title .title {
+			font-size: 65px;
+			width: 100%;
+			text-align: center;
+			text-transform: uppercase;
+			font-family: bloxat;
+		}
+
+		#title .crowns {
+			width: 100%;
+			height: 250px;
+			/*background-image: url("img/gameScreenshot.jpg");*/
+			background-size: cover;
+			position: relative;
+		}
+
+		#title .crowns img.crown {
+			position: absolute;
+			font-size: 70px;
+			width: 100px;
+			transform: translate(-50%, -50%);
+		}
+
+		img.crown.crown1 {
+			top: 20%;
+			left: calc(50% - 120px);
+		}
+
+		img.crown.crown2 {
+			top: 20%;
+			left: calc(50% + 120px);
+		}
+
+		img.crown.crown3 {
+			bottom: -17%;
+			left: 50%;
+		}
+
+		#title .crowns .and {
+			position: absolute;
+			font-size: 70px;
+			top: 40%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+		}
+
+		#HomeButtons {
+			z-index: 10;
+			width: 80%;
+			margin-left: auto;
+			margin-right: auto;
+		}
+
+		#HomeButtons button {
+			text-decoration: none;
+			padding: 10px;
+			width: 100%;
+			font-size: 25px;
+			margin-bottom: 20px;
+			cursor: pointer;
+			font-family: minecraft;
+		}
+
+		#credit {
+			margin-top: 50px;
+			width: 100%;
+			text-align: center;
+			opacity: 0.7;
+			font-size: 15px;
+		}
+
+		#credit name {
+			font-size: 20px;
+		}
+	</style>
+	</head>
+
+	<body>
+		<div id="title">
+			<div class="title top">Dungeons</div>
+			<div class="crowns">
+				<img src="img/crown.png" class="crown crown1">
+				<img src="img/crown.png" class="crown crown2">
+				<img src="img/crown.png" class="crown crown3">
+				<div class="and">&</div>
+			</div>
+			<div class="title bottom">Missions</div>
+		</div>
+		<div id="HomeButtons">
+			<button class="pixel-corners-4-4" onclick="location.href=this.getAttribute('href');" href="savedWorlds.html">Host Game</button>
+			<button class="pixel-corners-4-4" onclick="location.href=this.getAttribute('href');" href="joinGame.html">Join Game</button>
+			<div id="credit">Created By:<br>
+				<name>Michael Becker</name>
+			</div>
+		</div>
+	</body>
+
+</html>

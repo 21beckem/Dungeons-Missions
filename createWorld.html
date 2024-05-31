@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Dungeons & Missions</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel="stylesheet" href="base.css">
+	<link rel="stylesheet" href="fonts/bloxat.css">
+	<link rel="stylesheet" href="fonts/minecraft.css">
+	<link rel="stylesheet" href="custom-select.css">
+	<script src="jsalert.js"></script>
+	<style>
+		html,
+		body {
+			margin: 0;
+			padding: 0;
+			width: 100%;
+			height: 100%;
+			background-color: #616161;
+			font-family: minecraft;
+			overflow-y: auto;
+		}
+
+		#TopBanner {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			background-color: #616161;
+			color: white;
+			text-align: center;
+			font-size: 40px;
+			font-family: bloxat;
+			padding-top: 35px;
+			padding-bottom: 15px;
+			border-bottom: solid white 7px;
+			z-index: 5;
+		}
+
+		#worldsListParent {
+			width: calc(100% - 40px);
+			padding: 20px;
+		}
+
+		#worldsListParent .world {
+			background-color: white;
+			padding: 10px;
+			border: none;
+			margin-bottom: 15px;
+			display: flex;
+			cursor: pointer;
+		}
+
+		#worldsListParent .world .world-info {
+			text-transform: uppercase;
+			flex: 1;
+			padding-left: 15px;
+			margin-bottom: -15px;
+			transform: translateY(-6px);
+		}
+
+		#worldsListParent .world .editBtn {
+			font-size: 40px;
+			display: flex;
+			align-items: center;
+			padding-left: 13px;
+			padding-right: 3px;
+			border-left: solid black 1px;
+		}
+	</style>
+	</head>
+
+	<body>
+		<canvas id="makeImgCanvas" style="display: none;"></canvas>
+		<div id="TopBanner">NEW MAP</div>
+		<div style="width: 10px; height: 107px;"></div>
+
+		<div id="worldsListParent">
+                <label for="worldNameInput">Name:</label>
+                <input type="text" id="worldNameInput"><br>
+                
+                <label for="worldSizeSlider">Size:</label> <input type="number" id="worldSizeInput">
+                <input type="range" min="10" max="100" value="20" id="worldSizeSlider"><br>
+                
+                <label for="worldDefaultTextureSelect">Default Texture:</label>
+
+                <div id="worldDefaultTextureSelect" class="custom-select" type="select" onchange="">
+                    <select>
+                        <option class="pixel-corners-6-6" src="textures/wud_16.png" value="wud"></option>
+                        <option class="pixel-corners-4-6" src="textures/wud_16.png" value="wud"></option>
+                        <option class="pixel-corners-4-6" src="textures/cr8_16.png" value="cr8"></option>
+                        <option class="pixel-corners-4-6" src="textures/stn_16.jpg" value="stn"></option>
+                        <option class="pixel-corners-4-6" src="textures/drt_16.png" value="drt"></option>
+                        <option class="pixel-corners-4-6" src="textures/grs_16.png" value="grs"></option>
+                        <option class="pixel-corners-4-6" src="textures/snd_16.png" value="snd"></option>
+                        <option class="pixel-corners-4-6" src="textures/wtr_16.png" value="wtr"></option>
+                        <option class="pixel-corners-4-6" src="textures/cbl_16.png" value="cbl"></option>
+                        <option class="pixel-corners-4-6" src="beckBtns/blk.png" value="blk"></option>
+                    </select>
+                </div>
+                
+                <input type="submit" value="Create">
+		</div>
+        <script src="custom-select.js"></script>
+	</body>
+
+</html>

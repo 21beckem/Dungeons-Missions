@@ -71,7 +71,7 @@
 
 		<center>
             <h2 style="color: white;">Code</h2>
-            <input class="pixel-corners-4-4" id="codeInput" type="text" oninput="onCodeInput(this)">
+            <input class="pixel-corners-4-4" id="codeInput" type="text" oninput="onCodeInput(this)" onkeydown="if (event.keyCode == 13) joinGame()">
             <br><br><br>
             <button id="joinGameBtn" class="pixel-corners-4-4" disabled onclick="joinGame()">JOIN GAME</button>
         </center>
@@ -81,6 +81,7 @@ function onCodeInput(cdIn) {
     _('joinGameBtn').disabled = cdIn.value.length < 4;
 }
 function joinGame() {
+	if (_('codeInput').value.length < 4) { return; }
     localStorage.setItem('worldIdToOpen', 'Playroom_' + _('codeInput').value);
     location.href = 'game.html';
 }

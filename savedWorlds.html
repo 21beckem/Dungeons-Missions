@@ -5,9 +5,6 @@
 	<title>Dungeons & Missions</title>
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	<link rel="stylesheet" href="base.css">
-</head>
-
-<body>
 	<link rel="stylesheet" href="fonts/bloxat.css">
 	<link rel="stylesheet" href="fonts/minecraft.css">
 	<script src="jsalert.js"></script>
@@ -20,6 +17,7 @@
 			height: 100%;
 			background-color: #616161;
 			font-family: minecraft;
+			overflow-y: auto;
 		}
 
 		#TopBanner {
@@ -27,7 +25,7 @@
 			top: 0;
 			left: 0;
 			width: 100%;
-			background-color: transparent;
+			background-color: #616161;
 			color: white;
 			text-align: center;
 			font-size: 40px;
@@ -35,6 +33,7 @@
 			padding-top: 35px;
 			padding-bottom: 15px;
 			border-bottom: solid white 7px;
+			z-index: 5;
 		}
 
 		#worldsListParent {
@@ -72,16 +71,18 @@
 
 	<body>
 		<canvas id="makeImgCanvas" style="display: none;"></canvas>
-		<div id="TopBanner">
-			MAP SELECTION
-		</div>
-		<div style="width: 10px; height: 130px;"></div>
+		<div id="TopBanner">MAP SELECTION</div>
+		<div style="width: 10px; height: 107px;"></div>
 
 		<div id="worldsListParent">
-			<div class="world pixel-corners-4-4" id="new-world-btn" style="font-size: 35px;" onclick="createNewWorld('new world', 30)">
+			<div class="world pixel-corners-4-4" id="new-world-btn" style="font-size: 35px;" onclick="location.href = 'createWorld.html'">
 				<div style="width: 100%; text-align: center;"><img src="beckBtns/plus-square.png" style="image-rendering: pixelated; height: 0.9em; transform: translateY(4px);"> NEW MAP</div>
 			</div>
+			<div class="world pixel-corners-4-4" id="import-world-btn" style="font-size: 35px;" onclick="_('importInput').click()">
+				<div style="width: 100%; text-align: center;"><img src="beckBtns/import.png" style="image-rendering: pixelated; height: 0.9em; transform: translateY(5px) scale(1.3)"> IMPORT MAP</div>
+			</div>
 		</div>
+		<input id="importInput" type="file" accept=".world" style="display: none;">
 
 		<script src="savedWorlds.js"></script>
 	</body>

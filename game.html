@@ -149,7 +149,7 @@ document.querySelectorAll('DIV.custom-select.can-be-active').forEach(select => {
 window.addEventListener('DOMContentLoaded', async () => {
 	let gameCode = localStorage.getItem('worldIdToOpen');
 	if (!gameCode) {
-		location.href = '/index.html';
+		location.href = '/home.html';
 	}
 	if (gameCode.includes('Playroom_')) {
 		// join game then create world
@@ -172,12 +172,12 @@ function saveAndExit() {
 				_APP.SUB_saveWorldFile_floor();
 				_APP.SUB_saveWorldFile_entities();
 				setTimeout(() => {
-					location.href = 'index.html';
+					location.href = 'home.html';
 				}, 100);
 			}
 		});
 	} else {
-		location.href = 'index.html';
+		location.href = 'home.html';
 	}
 }
 

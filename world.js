@@ -63,11 +63,11 @@ class MissionMinecraft {
 				let idToOpen = localStorage.getItem('worldIdToOpen');
 				this._worldFile = JSON.parse(localStorage.getItem('WorldFile-' + idToOpen));
 				if (!idToOpen || !this._worldFile) {
-					location.href = 'index.html';
+					location.href = 'home.html';
 				}
 			} catch (e) {
 				console.log(e);
-				location.href = 'index.html';
+				location.href = 'home.html';
 			}
 			if (localStorage.getItem('goBackToHosting')) {
 				let code = localStorage.getItem('goBackToHosting');
