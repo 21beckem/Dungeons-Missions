@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Dungeons & Missions</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<script src="https://jscolor.com/release/2.5/jscolor-2.5.2/jscolor.js"></script>
+	<link rel="stylesheet" type="text/css" href="../base.css">
+	<link rel="stylesheet" href="../custom-select.css">
+	<link rel="stylesheet" href="../fonts/minecraft.css">
+	<script src="../jsalert.js"></script>
+</head>
+
+<body>
+	<div id="topRowButtons">
+		<div class="custom-select" type="buttons">
+			<select>
+				<option onclick="saveAndExit()" src="../beckBtns/exitbutton.png" value="0"></option>
+			</select>
+		</div>
+		<div class="custom-select" type="buttons">
+			<select>
+				<option onclick="_('importBtn').click()" src="../beckBtns/import.png" value="0"></option>
+			</select>
+			<input id="importBtn" type="file" accept=".entity, .stl, .obj" style="display: none;">
+		</div>
+		<div class="custom-select" type="buttons">
+			<select>
+				<option onclick="exportBtn()" src="../beckBtns/download.png" value="0"></option>
+			</select>
+		</div>
+		<div class="custom-select" type="buttons">
+			<select>
+				<option onclick="clearBtn()" src="../beckBtns/clean.png" value="0"></option>
+			</select>
+		</div>
+	</div>
+	<div style="position: absolute; top: 130px; right: 5px; display: flex; flex-direction: column;">
+		<div class="custom-select can-be-active" mode="build" type="buttons" style="margin-bottom: 10px;">
+			<select>
+				<option src="../beckBtns/hammer.png" value="0"></option>
+			</select>
+		</div>
+		<div class="custom-select can-be-active" mode="paint" type="buttons" style="margin-bottom: 10px;">
+			<select>
+				<option src="../beckBtns/brush.png" value="0"></option>
+			</select>
+		</div>
+		<div class="custom-select can-be-active" mode="pan" type="buttons" style="margin-bottom: 10px;">
+			<select>
+				<option src="../beckBtns/view_active.png" value="0"></option>
+			</select>
+		</div>
+		<div class="custom-select can-be-active" mode="erase" type="buttons" style="margin-bottom: 10px;">
+			<select>
+				<option src="../beckBtns/eraser.png" value="0"></option>
+			</select>
+		</div>
+	</div>
+	<div id="paintingTools" style="
+	display:none;
+	position: absolute;
+	bottom: 5px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 90%;
+	filter: drop-shadow(2px 2px 6px #0000004f);
+	">
+		<div class="bottomToolBox pixel-corners-4-4">
+			<button data-jscolor="{
+				closeButton:true,
+				valueElement:'#ColorPickerValue',
+				onChange: 'updateColor(this)'
+			}" id="colorPickerInput" style="flex: 1; border:solid black 1px"></button>
+			<input type="text" value="#FF0000" id="ColorPickerValue" style="flex: 2; width: inherit;">
+			<button onclick="enableEyeDrop()" id="enableEyeDropBtn" style="flex: 1;"><img src="../beckBtns/eyedropper.png" style="width: 40px; image-rendering: pixelated;"></button>
+		</div>
+	</div>
+	<script src="voxel-world.js" type="module"></script>
+	<script src="../custom-select.js"></script>
+	<script>
+HTMLCollection.prototype.forEach = function (x) {return Array.from(this).forEach(x);}
+function _(x) {return document.getElementById(x);}
+var _APP = globalThis._APP;
+
+document.querySelectorAll('DIV.custom-select.can-be-active').forEach(select => {
+	const btn = select.children[1];
+	btn.addEventListener('click', (e) => {
+		// change img icon
+		document.querySelectorAll('DIV.custom-select.can-be-active .select-selected').forEach(x => {
+			x.firstElementChild.src = x.firstElementChild.src.replace('_active','');
+			x.parentElement.classList.remove('active');
+		});
+		btn.firstElementChild.src = btn.firstElementChild.src.replace('.png','_active.png');
+		btn.parentElement.classList.add('active');
+
+		// show other buttons/panels if needed
+		const mode = select.getAttribute('mode');
+		if (mode == 'build') {
+			_('paintingTools').style.display = '';
+		} else if (mode == 'paint') {
+			_('paintingTools').style.display = '';
+		} else {
+			_('paintingTools').style.display = 'none';
+		}
+		_APP.setMouseMode(mode);
+	})
+});
+
+function enableEyeDrop() {
+	if (!_('enableEyeDropBtn').firstElementChild.src.includes('_active')) {
+		_('enableEyeDropBtn').firstElementChild.src = _('enableEyeDropBtn').firstElementChild.src.replace('.png','_active.png');
+	}
+	_APP.enableEyeDrop((clrStr)=> {
+		_('colorPickerInput').jscolor.fromString(clrStr);
+		_('enableEyeDropBtn').firstElementChild.src = _('enableEyeDropBtn').firstElementChild.src.replaceAll('_active','');
+	})
+}
+function updateColor(picker) {
+	_APP.updateSlectedPaint(picker.toHEXString());
+}
+setTimeout(()=>{
+	jscolor.trigger('change');
+},1000);
+
+document.getElementById('importBtn').onchange = async function() {
+	var files = document.getElementById('importBtn').files;
+	//console.log(files);
+	if (files.length <= 0) {
+		return false;
+	}
+	console.log(files.item(0).type);
+	if (!files.item(0).name.toLowerCase().endsWith('.entity')) {
+		const mesh = await _APP.SUB_ModelFileToMesh( files.item(0) );
+		mesh.scale.set(1, 1, 1);
+		_APP._scene.add(mesh);
+		await new Promise(resolve => setTimeout(resolve, 500));
+		let output = await _APP.SUB_voxelizeMesh(mesh);
+		_APP._builtBlocks = output;
+		_APP.SUB_saveTempVoxelBuilderBuilt();
+		location.reload();
+		// _APP.addThisGeometryToScene(geo);
+		return;
+	}
+	var fr = new FileReader();
+	fr.onload = function(e) { 
+		
+		JSAlert.confirm("You're about to replace this WHOLE design with the one you're uploading. You sure?", '<span style="color:orange">WOAH</span>', JSAlert.Icons.Warning)
+		.then((result) => {
+			if (result) {
+				var result = JSON.parse(e.target.result);
+				console.log(result);
+				_APP._builtBlocks = result;
+				_APP.SUB_saveTempVoxelBuilderBuilt();
+				location.reload();
+			}
+		});
+	}
+	fr.readAsText(files.item(0));
+};
+const downloadAsFile = (filename, dataObjToWrite) => {
+	const blob = new Blob([JSON.stringify(dataObjToWrite)], { type: "text/json" });
+	const link = document.createElement("a");
+
+	link.download = filename;
+	link.href = window.URL.createObjectURL(blob);
+	link.dataset.downloadurl = ["text/json", link.download, link.href].join(":");
+
+	const evt = new MouseEvent("click", {
+		view: window,
+		bubbles: true,
+		cancelable: true,
+	});
+
+	link.dispatchEvent(evt);
+	link.remove()
+};
+function exportBtn() {
+	if (Object.keys(_APP._builtBlocks).length <= 0) {
+		JSAlert.alert("Probably should add at least 1 block, don't you think? ;)");
+		return;
+	}
+	downloadAsFile('object-' + new Date().valueOf() + '.entity', _APP._builtBlocks);
+}
+function saveAndExit() {
+	if (Object.keys(_APP._builtBlocks).length <= 0) {
+		JSAlert.alert("Probably should add at least 1 block, don't you think? ;)", '', JSAlert.Icons.Failed);
+		return;
+	}
+	JSAlert.confirm('Save and back to game?', '')
+	.then((result) => {
+		if (result) {
+			// get current world working on
+			_worldFile = null;
+			let idToOpen = null;
+			try {
+				idToOpen = localStorage.getItem('worldIdToOpen');
+				_worldFile = JSON.parse(localStorage.getItem('WorldFile-' + idToOpen));
+				if (!idToOpen || !_worldFile) {
+					console.error('WorldFile not found');
+					return;
+				}
+			} catch (e) {
+				console.log(e);
+				return;
+			}
+			
+			// find entity we're editing
+			let thisEnt = _worldFile.entities.arr.filter(x => x.id == localStorage.getItem('whereToStoreVoxelBuilderEdits'));
+			if (thisEnt.length < 1) {
+				console.error('Entity not fount');
+				return;
+			} else if (thisEnt.length < 1) {
+				console.error('Found several entities with same id');
+				return;
+			}
+			thisEnt = thisEnt[0];
+		
+			// save changes
+			_worldFile.lastEdited = new Date().toISOString();
+			_worldFile.entities.lastEdited = new Date().toISOString();
+			thisEnt.blocks = _APP._builtBlocks;
+			localStorage.setItem('WorldFile-' + idToOpen, JSON.stringify(_worldFile));
+		
+			// back to game
+			location.href = '../game.html';
+		}
+	});
+}
+function clearBtn() {
+	JSAlert.confirm('Bro. Are you sure you want this? This will clear this whole object!', '<span style="color:red">CLEAR</span>', JSAlert.Icons.Warning)
+	.then((result) => {
+		if (result) {
+			localStorage.setItem('tempVoxelBuilderBuilt', '{}');
+			location.reload();
+		}
+	});
+}
+history.pushState(null, document.title, location.href);
+window.addEventListener('popstate', function (event) {
+	var alert = new JSAlert("That was a dangerous move! Let me help you out. Select one of the following:", '<span style="color:orange">WOAH</span>', JSAlert.Icons.Warning);
+	alert.addButton('Save').then(function() {
+		saveAndExit();
+	});
+	alert.addButton("Discard Changes").then(function() {
+		JSAlert.confirm('Are you sure you want to discard your changes?', '<span style="color:red">DANGER</span>', JSAlert.Icons.Warning)
+			.then((result) => {
+				if (result) {
+					location.href = '../game.html';
+				}
+			});
+	});
+	alert.addButton("Cancel");
+	alert.show();
+	history.pushState(null, document.title, location.href);
+});
+	</script>
+</body>
+
+</html>
