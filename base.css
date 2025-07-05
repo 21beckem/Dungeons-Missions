@@ -1,0 +1,562 @@
+body {
+	width: 100%;
+	height: 100%;
+	position: relative;
+	background: #000000;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	font-family: minecraft;
+}
+
+html {
+	height: 100%;
+	width: 100%;
+	overflow: hidden;
+}
+
+canvas {
+	touch-action: none;
+}
+
+#inspector {
+	width: 100%;
+	position: fixed;
+	top: -20px;
+	left: 0;
+	z-index: 10;
+    filter: drop-shadow(2px 2px 6px #0000004f);
+	overflow: hidden;
+	transform: translateY(-260px);
+	transition: transform 0.25s ease;
+}
+#inspector #entityTrashButton {
+	background: none;
+	border: none;
+	color: rgb(218, 54, 54);
+	position: absolute;
+	right: 8px;
+	top: 28px;
+	width: 22px;
+	height: 22px;
+	background-size: cover;
+	image-rendering: pixelated;
+	cursor: pointer;
+	background-image: url('beckBtns/trashcan.png');
+}
+#inspector .body {
+	background-color: white;
+	padding: 15px 10px 20px 10px;
+}
+#inspector .body #buttonRow {
+	width: 100%;
+}
+#inspector .body #buttonRow button {
+	background-color: rgb(223, 223, 223);
+	border: none;
+	padding: 5px;
+	margin: 0px 7px;
+	padding: 5px 7px;
+	font-family: minecraft;
+	font-size: 15px;
+}
+.entity-size-slider {
+	-webkit-appearance: none;
+	width: 100%;
+	height: 2px;
+	border-radius: 5px;
+	background: black;
+	outline: none;
+	opacity: 1;
+	-webkit-transition: .2s;
+	transition: opacity .2s;
+}
+
+.entity-size-slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 25px;
+	height: 25px;
+	border-radius: 50%;
+	background: #04AA6D;
+	cursor: pointer;
+}
+
+.entity-size-slider::-moz-range-thumb {
+	width: 15px;
+	height: 15px;
+	border-radius: 0;
+	background: black;
+	cursor: pointer;
+}
+
+#presetSelectorParent {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 15;
+	user-select: none;
+	-ms-user-select: none;
+	-webkit-user-select: none;
+}
+#presetSelectorParent:not(.open) {
+	pointer-events: none;
+}
+#presetSelectorParent.open {
+	pointer-events: all;
+}
+#presetSelectorParent .tint-background {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: black;
+	opacity: 0.15;
+	transition: opacity 0.2s;
+}
+#presetSelectorParent:not(.open) .tint-background {
+	opacity: 0;
+}
+#presetSelectorParent.open .tint-background {
+	opacity: 0.15;
+}
+#presetSelectorParent .mainWindowParent {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+	filter: drop-shadow(2px 6px 10px #0000005e);
+	transition: top 0.2s;
+	pointer-events: none;
+}
+#presetSelectorParent:not(.open) .mainWindowParent {
+	top: 100%;
+}
+#presetSelectorParent.open .mainWindowParent {
+	top: 0%;
+}
+#presetSelectorParent .mainWindow {
+	color: white;
+	padding: 10px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	max-width: 600px;
+	width: calc(100% - 60px);
+	max-height: 450px;
+	height: calc(100% - 60px);
+	background-color: #616161;
+	pointer-events: all;
+}
+#presetSelectorParent .mainWindow .body {
+	position: relative;
+	height: 100%;
+	width: 100%;
+}
+#presetSelectorParent .mainWindow .body .x-button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	cursor: pointer;
+	transform: translateY(-10px);
+}
+.pixel-corners-4-8-border,
+.pixel-corners-4-8-border--wrapper {
+  clip-path: polygon(0px calc(100% - 20px),
+    4px calc(100% - 20px),
+    4px calc(100% - 12px),
+    8px calc(100% - 12px),
+    8px calc(100% - 8px),
+    12px calc(100% - 8px),
+    12px calc(100% - 4px),
+    20px calc(100% - 4px),
+    20px 100%,
+    calc(100% - 20px) 100%,
+    calc(100% - 20px) calc(100% - 4px),
+    calc(100% - 12px) calc(100% - 4px),
+    calc(100% - 12px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 20px),
+    100% calc(100% - 20px),
+    100% 20px,
+    calc(100% - 4px) 20px,
+    calc(100% - 4px) 12px,
+    calc(100% - 8px) 12px,
+    calc(100% - 8px) 8px,
+    calc(100% - 12px) 8px,
+    calc(100% - 12px) 4px,
+    calc(100% - 20px) 4px,
+    calc(100% - 20px) 0px,
+    20px 0px,
+    20px 4px,
+    12px 4px,
+    12px 8px,
+    8px 8px,
+    8px 12px,
+    4px 12px,
+    4px 20px,
+    0px 20px);
+  position: relative;
+}
+.pixel-corners-4-8-border {
+  border: 4px solid transparent;
+}
+.pixel-corners-4-8-border--wrapper {
+  width: fit-content;
+  height: fit-content;
+}
+.pixel-corners-4-8-border--wrapper .pixel-corners-4-8-border {
+  display: block;
+  clip-path: polygon(4px 20px,
+    8px 20px,
+    8px 12px,
+    12px 12px,
+    12px 8px,
+    20px 8px,
+    20px 4px,
+    calc(100% - 20px) 4px,
+    calc(100% - 20px) 8px,
+    calc(100% - 12px) 8px,
+    calc(100% - 12px) 12px,
+    calc(100% - 8px) 12px,
+    calc(100% - 8px) 20px,
+    calc(100% - 4px) 20px,
+    calc(100% - 4px) calc(100% - 20px),
+    calc(100% - 8px) calc(100% - 20px),
+    calc(100% - 8px) calc(100% - 12px),
+    calc(100% - 12px) calc(100% - 12px),
+    calc(100% - 12px) calc(100% - 8px),
+    calc(100% - 20px) calc(100% - 8px),
+    calc(100% - 20px) calc(100% - 4px),
+    20px calc(100% - 4px),
+    20px calc(100% - 8px),
+    12px calc(100% - 8px),
+    12px calc(100% - 12px),
+    8px calc(100% - 12px),
+    8px calc(100% - 20px),
+    4px calc(100% - 20px));
+}
+.pixel-corners-4-8-border::after,
+.pixel-corners-4-8-border--wrapper::after {
+  content: "";
+  position: absolute;
+  clip-path: polygon(0px calc(100% - 20px),
+    4px calc(100% - 20px),
+    4px calc(100% - 12px),
+    8px calc(100% - 12px),
+    8px calc(100% - 8px),
+    12px calc(100% - 8px),
+    12px calc(100% - 4px),
+    20px calc(100% - 4px),
+    20px 100%,
+    calc(100% - 20px) 100%,
+    calc(100% - 20px) calc(100% - 4px),
+    calc(100% - 12px) calc(100% - 4px),
+    calc(100% - 12px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 20px),
+    100% calc(100% - 20px),
+    100% 20px,
+    calc(100% - 4px) 20px,
+    calc(100% - 4px) 12px,
+    calc(100% - 8px) 12px,
+    calc(100% - 8px) 8px,
+    calc(100% - 12px) 8px,
+    calc(100% - 12px) 4px,
+    calc(100% - 20px) 4px,
+    calc(100% - 20px) 0px,
+    20px 0px,
+    20px 4px,
+    12px 4px,
+    12px 8px,
+    8px 8px,
+    8px 12px,
+    4px 12px,
+    4px 20px,
+    0px 20px,
+    0px 50%,
+    4px 50%,
+    4px 20px,
+    8px 20px,
+    8px 12px,
+    12px 12px,
+    12px 8px,
+    20px 8px,
+    20px 4px,
+    calc(100% - 20px) 4px,
+    calc(100% - 20px) 8px,
+    calc(100% - 12px) 8px,
+    calc(100% - 12px) 12px,
+    calc(100% - 8px) 12px,
+    calc(100% - 8px) 20px,
+    calc(100% - 4px) 20px,
+    calc(100% - 4px) calc(100% - 20px),
+    calc(100% - 8px) calc(100% - 20px),
+    calc(100% - 8px) calc(100% - 12px),
+    calc(100% - 12px) calc(100% - 12px),
+    calc(100% - 12px) calc(100% - 8px),
+    calc(100% - 20px) calc(100% - 8px),
+    calc(100% - 20px) calc(100% - 4px),
+    20px calc(100% - 4px),
+    20px calc(100% - 8px),
+    12px calc(100% - 8px),
+    12px calc(100% - 12px),
+    8px calc(100% - 12px),
+    8px calc(100% - 20px),
+    4px calc(100% - 20px),
+    4px 50%,
+    0px 50%);
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  display: block;
+  pointer-events: none;
+}
+.pixel-corners-4-8-border::after {
+  margin: -4px;
+}
+#presetSelectionBox {
+	width: 100%;
+	height: calc(100% - 75px);
+	overflow-y: scroll;
+	box-shadow: inset 0px 0px 12px -5px black;
+}
+#presetSelectionBox preset {
+	padding: 10px;
+	display: flex;
+	height: 50px;
+	cursor: pointer;
+}
+#presetSelectionBox preset * {
+	pointer-events: none;
+}
+#presetSelectionBox preset .left-box {
+	width: 60px;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+#presetSelectionBox preset .left-box .img {
+	width: 100%;
+	height: 100%;
+	background-image: url('img/crown.png');
+	image-rendering: pixelated;
+	background-repeat: no-repeat;
+	background-size: contain;
+	background-position: 0 0;
+}
+#presetSelectionBox preset .right-box {
+	display: flex;
+	margin: 0;
+	padding: 0;
+	width: calc(100% - 60px);
+	flex-direction: column;
+}
+#presetSelectionBox preset .right-box .author {
+	padding: 0;
+	margin: 0;
+	opacity: 0.5;
+}
+#presetSelectionBox preset .right-box .name {
+	font-size: 25px;
+	padding: 0;
+	margin: 0;
+}
+
+#topRowButtons {
+	top: 10px;
+	position: fixed;
+	display: flex;
+	width: 100%;
+	justify-content: space-around;
+}
+#terrainTools {
+	position: fixed;
+	top: 50%;
+	transform: translateY(-50%);
+	right:10px;
+	display: flex;
+	flex-direction: column;
+    filter: drop-shadow(2px 2px 6px #0000004f);
+}
+#terrainTools button {
+	border: none;
+	background: none;
+	padding: 0;
+}
+#terrainTools button img {
+	width: 55px;
+	margin-top: 30px;
+    image-rendering: pixelated;
+}
+#bottomRowButtons {
+	bottom: 10px;
+	position: fixed;
+	display: flex;
+	width: calc(100% - 20px);
+	left: 10px;
+	justify-content: space-between;
+}
+#beginHostingBtn {
+	padding: 5px 10px;
+	font-size: 20px;
+	background-color: white;
+	cursor: pointer;
+	width: 140px;
+	text-align: center;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.bottomToolBox {
+	width: 100%;
+	display: flex;
+	background-color: white;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+.bottomToolBox select {
+	width: 100%;
+}
+
+.bottomToolBox * {
+	border: none;
+	background: white;
+	padding: 5px;
+	cursor: pointer;
+	margin: 0px;
+	font-size: 20px;
+}
+
+.loader {
+	border: 3px solid #f3f3f3;
+	border-radius: 50%;
+	border-top: 3px solid #979797;
+	width: 22px;
+	height: 22px;
+	padding: 3px;
+	-webkit-animation: spin 2s linear infinite; /* Safari */
+	animation: spin 2s linear infinite;
+}
+@-webkit-keyframes spin {
+	0% { -webkit-transform: rotate(0deg); }
+	100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+.pixel-corners-4-6 {
+	clip-path: polygon(0px calc(100% - 16px),
+			4px calc(100% - 16px),
+			4px calc(100% - 8px),
+			8px calc(100% - 8px),
+			8px calc(100% - 4px),
+			16px calc(100% - 4px),
+			16px 100%,
+			calc(100% - 16px) 100%,
+			calc(100% - 16px) calc(100% - 4px),
+			calc(100% - 8px) calc(100% - 4px),
+			calc(100% - 8px) calc(100% - 8px),
+			calc(100% - 4px) calc(100% - 8px),
+			calc(100% - 4px) calc(100% - 16px),
+			100% calc(100% - 16px),
+			100% 16px,
+			calc(100% - 4px) 16px,
+			calc(100% - 4px) 8px,
+			calc(100% - 8px) 8px,
+			calc(100% - 8px) 4px,
+			calc(100% - 16px) 4px,
+			calc(100% - 16px) 0px,
+			16px 0px,
+			16px 4px,
+			8px 4px,
+			8px 8px,
+			4px 8px,
+			4px 16px,
+			0px 16px);
+}
+
+.pixel-corners-6-6 {
+	clip-path: polygon(0px calc(100% - 24px),
+			6px calc(100% - 24px),
+			6px calc(100% - 12px),
+			12px calc(100% - 12px),
+			12px calc(100% - 6px),
+			24px calc(100% - 6px),
+			24px 100%,
+			calc(100% - 24px) 100%,
+			calc(100% - 24px) calc(100% - 6px),
+			calc(100% - 12px) calc(100% - 6px),
+			calc(100% - 12px) calc(100% - 12px),
+			calc(100% - 6px) calc(100% - 12px),
+			calc(100% - 6px) calc(100% - 24px),
+			100% calc(100% - 24px),
+			100% 24px,
+			calc(100% - 6px) 24px,
+			calc(100% - 6px) 12px,
+			calc(100% - 12px) 12px,
+			calc(100% - 12px) 6px,
+			calc(100% - 24px) 6px,
+			calc(100% - 24px) 0px,
+			24px 0px,
+			24px 6px,
+			12px 6px,
+			12px 12px,
+			6px 12px,
+			6px 24px,
+			0px 24px);
+}
+.pixel-corners-4-4 {
+	clip-path: polygon(
+		0px calc(100% - 8px),
+		4px calc(100% - 8px),
+		4px calc(100% - 4px),
+		8px calc(100% - 4px),
+		8px 100%,
+		calc(100% - 8px) 100%,
+		calc(100% - 8px) calc(100% - 4px),
+		calc(100% - 4px) calc(100% - 4px),
+		calc(100% - 4px) calc(100% - 8px),
+		100% calc(100% - 8px),
+		100% 8px,
+		calc(100% - 4px) 8px,
+		calc(100% - 4px) 4px,
+		calc(100% - 8px) 4px,
+		calc(100% - 8px) 0px,
+		8px 0px,
+		8px 4px,
+		4px 4px,
+		4px 8px,
+		0px 8px
+	);
+}
+.pixel-corners-4-2 {
+	clip-path: polygon(
+	  0px calc(100% - 4px),
+	  4px calc(100% - 4px),
+	  4px 100%,
+	  calc(100% - 4px) 100%,
+	  calc(100% - 4px) calc(100% - 4px),
+	  100% calc(100% - 4px),
+	  100% 4px,
+	  calc(100% - 4px) 4px,
+	  calc(100% - 4px) 0px,
+	  4px 0px,
+	  4px 4px,
+	  0px 4px
+	);
+  }

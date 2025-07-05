@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Dungeons & Missions</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="base.css">
+	<link rel="stylesheet" href="custom-select.css">
+	<link rel="stylesheet" href="fonts/minecraft.css">
+	<link rel="stylesheet" href="fonts/bloxat.css">
+	<script src="jsalert.js"></script>
+	<script src="presets.js"></script>
+</head>
+
+<body>
+	<!-- Import Playroom Assets -->
+	<script src="https://cdn.joinplayroom.com/react@18.2.0/umd/react.development.js"></script>
+	<script src="https://cdn.joinplayroom.com/react-dom@18.2.0/umd/react-dom.development.js"></script>
+	<script src="https://cdn.joinplayroom.com/playroomkit/multiplayer.umd.js"></script>
+	<div id="inspector">
+		<div class="body pixel-corners-4-6">
+			<center><h4>Entity Details</h4></center>
+			<button id="entityTrashButton"></button>
+			<label for="entityNameInput">Name:</label>
+			<input type="text" id="entityNameInput">
+			<br><br>
+			<label id="entitySizeRangeLabel" for="entitySizeRange">Size: </label><input type="number" id="entitySizeRangeValue">
+			<div id="Inspector_DM_eyes_only">
+				<br>
+				<input type="range" id="entitySizeRange" class="entity-size-slider" min="15" max="100">
+				<br><br>
+				<div style="width: 100%;" id="buttonRow">
+					<button class="pixel-corners-4-2" style="float: left; padding: 5px 20px" id="inspectEditVoxels">Edit</button>
+					<button class="pixel-corners-4-2" style="float: left;" id="inspectDuplicateBtn">Duplicate</button>
+					<button class="pixel-corners-4-2" style="float: right;" id="inspectAdd45Btn">+45°</button>
+					<button class="pixel-corners-4-2" style="float: right;" id="inspectSub45Btn">-45°</button>
+				</div>
+				<br><br>
+				<label for="entityNotesInput">Notes:</label>
+				<input type="text" id="entityNotesInput">
+			</div>
+			<div style="position: absolute; right: 10px; bottom: 5px; padding: 5px; cursor: pointer;" onclick="_APP.SUB_UnselectEntity();">X</div>
+		</div>
+	</div>
+	<div id="presetSelectorParent">
+		<div class="tint-background" onclick="this.parentElement.classList.remove('open')"></div>
+		<div class="mainWindowParent">
+			<div class="mainWindow pixel-corners-4-8-border">
+				<div class="body">
+					
+					<div class="x-button" onclick="this.parentElement.parentElement.parentElement.parentElement.classList.remove('open')">X</div>
+					<center><h3 style="font-family: bloxat;">Select an Entity</h3></center>
+
+					<div id="presetSelectionBox">
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="topRowButtons" style="display: none;">
+		<div class="custom-select can-be-active" mode="terrain" type="buttons">
+			<select>
+				<option src="beckBtns/terrain.png" value="0"></option>
+				<!-- <option onclick="console.log('terrain square');" src="beckBtns/square-tool.png" value="1"></option>
+				<option onclick="console.log('terrain square');" src="beckBtns/bucket.png" value="2"></option> -->
+			</select>
+		</div>
+		<div class="custom-select" type="buttons">
+			<select>
+				<option src="beckBtns/object.png" onclick="openPresetMenu()" value="0"></option>
+			</select>
+		</div>
+		<div class="custom-select can-be-active" mode="paint" type="select" only-open-with-class="active" onchange="_APP._paintTool = ['brush','bucket','eraser'][this.value]">
+			<select>
+				<option src="beckBtns/brush.png" value="0"></option>
+				<option src="beckBtns/brush.png" value="0"></option>
+				<option src="beckBtns/bucket.png" value="1"></option>
+				<option src="beckBtns/eraser.png" value="2"></option>	
+			</select>
+		</div>
+		<div class="custom-select" type="select" onchange="_APP._selectedPaint = this.value">
+			<select>
+				<option class="pixel-corners-6-6" src="textures/wud_16.png" value="wud"></option>
+				<option class="pixel-corners-4-6" src="textures/wud_16.png" value="wud"></option>
+				<option class="pixel-corners-4-6" src="textures/cr8_16.png" value="cr8"></option>
+				<option class="pixel-corners-4-6" src="textures/stn_16.jpg" value="stn"></option>
+				<option class="pixel-corners-4-6" src="textures/drt_16.png" value="drt"></option>
+				<option class="pixel-corners-4-6" src="textures/grs_16.png" value="grs"></option>
+				<option class="pixel-corners-4-6" src="textures/snd_16.png" value="snd"></option>
+				<option class="pixel-corners-4-6" src="textures/wtr_16.png" value="wtr"></option>
+				<option class="pixel-corners-4-6" src="textures/cbl_16.png" value="cbl"></option>
+				<option class="pixel-corners-4-6" src="beckBtns/blk.png" value="blk"></option>
+				<option class="pixel-corners-4-6" src="textures/texture-map_16.png" value="texture-map"></option>
+			</select>
+		</div>
+	</div>
+
+	<div id="terrainTools" style="display: none;">
+		<button onclick="_APP.TERRAIN_add()"><img src="beckBtns/plus.png"></button>
+		<button onclick="_APP.TERRAIN_subtract()"><img src="beckBtns/minus.png"></button>
+	</div>
+
+	<div id="bottomRowButtons">
+		<div class="custom-select" type="buttons">
+			<select>
+				<option onclick="saveAndExit()" src="beckBtns/exitbutton.png" value="0"></option>
+			</select>
+		</div>
+		<div id="gameHosterDiv" style="display: flex; justify-content: center; align-items: center; filter: drop-shadow(2px 2px 6px #0000004f);">
+			<div id="beginHostingBtn" class="pixel-corners-4-4" onclick="_APP.startHosting(this)"><div class="loader" style="margin-left: calc(50% - 19px);"></div></div>
+		</div>
+		<div class="custom-select can-be-active" mode="interact" type="buttons">
+			<select>
+				<option src="beckBtns/view_active.png" value="0"></option>
+			</select>
+		</div>
+	</div>
+
+	<script src="world.js" type="module"></script>
+	<script src="custom-select.js"></script>
+	<script>
+HTMLCollection.prototype.forEach = function (x) {return Array.from(this).forEach(x);}
+function _(x) {return document.getElementById(x);}
+var _APP = globalThis._APP;
+
+document.querySelectorAll('DIV.custom-select.can-be-active').forEach(select => {
+	const btn = select.children[1];
+	btn.addEventListener('click', (e) => {
+		// change img icon
+		document.querySelectorAll('DIV.custom-select.can-be-active .select-selected').forEach(x => {
+			x.firstElementChild.src = x.firstElementChild.src.replace('_active','');
+			x.parentElement.classList.remove('active');
+		});
+		btn.firstElementChild.src = btn.firstElementChild.src.replace('.png','_active.png');
+		btn.parentElement.classList.add('active');
+
+		// show other buttons/panels if needed
+		const mode = select.getAttribute('mode');
+		if (mode == 'terrain') {
+			_('terrainTools').style.display = '';
+		} else {
+			_('terrainTools').style.display = 'none';
+		}
+		_APP.setMouseMode(mode);
+	})
+});
+
+window.addEventListener('DOMContentLoaded', async () => {
+	let gameCode = localStorage.getItem('worldIdToOpen');
+	if (!gameCode) {
+		location.href = '/index.html';
+	}
+	if (gameCode.includes('Playroom_')) {
+		// join game then create world
+		InitMissionMinecraft('Playroom');
+		gameCode = gameCode.replace('Playroom_', '');
+		await _APP.joinGameWithCode(_('beginHostingBtn'), gameCode);
+		_APP.InitializeWorld();
+	} else {
+		InitMissionMinecraft('local');
+		_APP.InitializeWorld();
+		_('beginHostingBtn').innerHTML = 'Begin Hosting';
+		_('topRowButtons').style.display = '';
+	}
+});
+function saveAndExit() {
+	if (_APP.playMode == 'local') {
+		JSAlert.confirm("Are you sure you want to leave?<br>Don't worry, I'll save your progress :)", 'Save and Exit', JSAlert.Icons.Question)
+		.then((result) => {
+			if (result) {
+				_APP.SUB_saveWorldFile_floor();
+				_APP.SUB_saveWorldFile_entities();
+				setTimeout(() => {
+					location.href = 'index.html';
+				}, 100);
+			}
+		});
+	} else {
+		location.href = 'index.html';
+	}
+}
+
+// fill in presets list
+String.prototype.addSlashes = function() {
+    return this.replace(/\\/g, '\\\\').
+        replace(/\u0008/g, '\\b').
+        replace(/\t/g, '\\t').
+        replace(/\n/g, '\\n').
+        replace(/\f/g, '\\f').
+        replace(/\r/g, '\\r').
+        replace(/'/g, '\\\'').
+        replace(/"/g, '\\"');
+}
+let presetsBox = _('presetSelectionBox');
+let homeFolder = '<div id="preset_folder_0" class="preset_folder">';
+PRESETS.forEach((preset, i) => {
+	if (preset.hasOwnProperty('folder')) {
+		i++;
+		let toAdd = `<div class="preset_folder" id="preset_folder_${i}" style="display: none;">
+			<preset onclick="openThisPresetFolder(0);">
+				<div class="right-box" style="padding: 12px">
+					<div class="name">&lt; Back</div>
+				</div>
+			</preset>`;
+
+		preset.folder.forEach((x, j) => {
+			toAdd += `
+				<preset onclick="useThisPreset('${x.blocks.addSlashes()}', '${x.name.addSlashes()}');">
+					<div class="left-box">
+						<div class="img" style="background-image: url('presets/${x.icon}');"></div>
+					</div>
+					<div class="right-box">
+						<div class="name">${x.name}</div>
+						<div class="author">${x.author}</div>
+					</div>
+				</preset>`;
+			});
+
+		toAdd += '</div>';
+		presetsBox.innerHTML += toAdd;
+
+		homeFolder += `
+			<preset onclick="openThisPresetFolder(${i});">
+				<div class="left-box">
+					<div class="img" style="background-image: url('img/folder_icon.png');"></div>
+				</div>
+				<div class="right-box">
+					<div class="name" style="padding-top:10px">${preset.name}</div>
+				</div>
+			</preset>`;
+	} else {
+		homeFolder += `
+			<preset onclick="useThisPreset('${preset.blocks.addSlashes()}', '${preset.name.addSlashes()}');">
+				<div class="left-box">
+					<div class="img" style="background-image: url('presets/${preset.icon}');"></div>
+				</div>
+				<div class="right-box">
+					<div class="name">${preset.name}</div>
+					<div class="author">${preset.author}</div>
+				</div>
+			</preset>`;
+	}
+});
+homeFolder += '</div>';
+presetsBox.innerHTML += homeFolder;
+function openPresetMenu() {
+	_('presetSelectorParent').classList.add('open');
+	openThisPresetFolder(0);
+}
+function useThisPreset(blocks, nam) {
+	_APP.importEntityFromFile('presets/' + blocks, nam);
+	_('presetSelectorParent').classList.remove('open');
+}
+function openThisPresetFolder(i) {
+	document.getElementsByClassName('preset_folder').forEach(x => x.style.display = 'none');
+	_('preset_folder_' + i).style.display = 'block';
+	presetsBox.scrollTo(0, 0);
+}
+	</script>
+</body>
+
+</html>

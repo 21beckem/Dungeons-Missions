@@ -1,0 +1,15 @@
+{
+    "name": "Dungeons & Missions",
+    "short_name": "D&M",
+    "start_url": "index.html",
+    "display": "standalone",
+    "background_color": "#616161",
+    "description": "A virtual tabletop for missionaries",
+    "icons": [
+        {
+            "src": "logo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
